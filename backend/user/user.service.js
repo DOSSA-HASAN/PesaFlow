@@ -73,3 +73,48 @@ export const login = async ({email, password}) => {
         },
     };
 }
+
+export const updateUserProfile = async ({id, data}) => {
+        if (!id) {
+            throw new AppError("Missing user id", 400)
+        }
+
+        if (!data || typeof data != "object") {
+            throw new AppError("Invalid data", 400)
+        }
+
+        // developer and admin can update:
+        // email, password, role, tillNumber
+        const allowedFields = ["email", "password", "role", "tillNumber"]
+
+        // check if frontend has sent valid update data
+        const updates = Object.keys(data)
+        // validate request updates
+        const isValidUpdate = updates.every(field => allowedFields.includes(field))
+
+        if (!isValidUpdate) {
+            throw new AppError("You don't have permissions to update some fields", 401)
+        }
+
+        const user = await User.findById(id)
+
+        if (!user) {
+            throw new AppError("User not found", 404)
+        }
+
+        // handle data separately
+        if (data.password) {
+            // hash data.password from req
+            user.password = await bcrypt.hash(data.password, 10)
+            delete data.password
+        }
+
+        // Apply remaining updates dynamically
+        updates.forEach(field => {
+            user[field] = data[field]
+        })
+
+        await user.save()
+
+        return `${user.email}'s details have been updated succesfully`
+}

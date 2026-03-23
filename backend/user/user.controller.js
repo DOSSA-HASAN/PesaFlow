@@ -35,52 +35,12 @@ export const updateUserProfile = async (req, res) => {
         const {id} = req.params
         const {data} = req.body
 
-        if (!id) {
-            return errorResponse(res, "Missing user ID")
-        }
+        const updatedUser = await  userService.updateUserProfile({id, data})
 
-        if (!data || typeof data != "object") {
-            return errorResponse(res, "Invalid data", 400)
-        }
-
-        // developer and admin can update:
-        // email, password, role, tillNumber
-        const allowedFields = ["email", "password", "role", "tillNumber"]
-
-        // check if frontend has sent valid update data
-        const updates = Object.keys(data)
-        // validate request updates
-        const isValidUpdate = updates.every(field => allowedFields.includes(field))
-
-        if (!isValidUpdate) {
-            return errorResponse(res, "You don't have permissions to update some fields")
-        }
-
-        const user = await User.findById(id)
-
-        if (!user) {
-            return errorResponse(res, "User not found", 404)
-        }
-
-        // handle data seperately
-        if (data.password) {
-            // hash data.password from req
-            user.password = await bcrypt.hash(data.password, 10)
-            delete data.password
-        }
-
-        // Apply remaining updates dynamically
-        updates.forEach(field => {
-            user[field] = data[field]
-        })
-
-        await user.save()
-
-        return successResponse(res, null, `${user.email}'s details have been updated succesfully`)
-
+        return successResponse(res, null, updatedUser, 200)
 
     } catch (e) {
-        return errorResponse(res, "Failed to update user profile", 500, e)
+        return errorResponse(res, e.message || "Failed to update user profile", e.statusCode || 500, e)
     }
 }
 
