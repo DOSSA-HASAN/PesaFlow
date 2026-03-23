@@ -48,25 +48,11 @@ export const deleteUser = async (req, res) => {
     try {
         const {id} = req.params
 
-        if (!id) {
-            return errorResponse(res, "Missing user ID", 400)
-        }
+        const deletedUser = await userService.deleteUser({id})
 
-        const user = await User.findById(id)
-
-        if (!user) {
-            return errorResponse(res, "User not found", 404)
-        }
-
-        if (user.role === "DEVELOPER" || user.role === "ADMIN") {
-            return errorResponse(res, "Cannot delete this user", 400)
-        }
-
-        await user.deleteOne()
-
-        return successResponse(res, null, `Account associated with email id: ${user.email} has been deleted permanently`)
+        return successResponse(res, null, deletedUser)
     } catch (e) {
-        return errorResponse(res, "Faild to delete user by ID", 500, e)
+        return errorResponse(res, e.message || "Faild to delete user by ID", e.statusCode || 500, e)
     }
 }
 

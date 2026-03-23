@@ -118,3 +118,24 @@ export const updateUserProfile = async ({id, data}) => {
 
         return `${user.email}'s details have been updated succesfully`
 }
+
+export const deleteUser = async ({id}) => {
+        if (!id) {
+            throw new AppError("Missing user ID", 400)
+        }
+
+        const user = await User.findById(id)
+
+        if (!user) {
+            throw new AppError("User not found", 404)
+        }
+
+        if (user.role === "DEVELOPER" || user.role === "ADMIN") {
+            throw new AppError("Cannot delete this user", 400)
+        }
+
+        await user.deleteOne()
+
+        return `Account associated with email id: ${user.email} has been deleted permanently`
+}
+
