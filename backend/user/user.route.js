@@ -7,9 +7,9 @@ const router = express.Router()
 // ensure developer / admin has a valid accessToken
 router.use(verifyUser, roleChecker(["DEVELOPER", "ADMIN"]))
 router.post("/register", createUser)
-router.post("profile/update/:id", updateUserProfile)
-router.post("user/delete/:id", deleteUser)
-router.post("user/all", getAllUsers)
-router.post("/user/get/:id", getUser)
+router.patch("profile/update/:id", updateUserProfile)
+router.delete("user/delete/:id", deleteUser)
+router.get("user/all", getAllUsers)
+router.get("/user/get/:id", getUser)
 
 export default router
