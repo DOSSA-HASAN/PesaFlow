@@ -139,3 +139,16 @@ export const deleteUser = async ({id}) => {
         return `Account associated with email id: ${user.email} has been deleted permanently`
 }
 
+export const getAllUsers = async () => {
+    try {
+        const users = await User.find()
+
+        if (!users) {
+            return successResponse(res, null, "No users found", 200)
+        }
+
+        return { users }
+    } catch (e) {
+        return errorResponse(res, "Failed to retrieve all users", 500, e)
+    }
+}

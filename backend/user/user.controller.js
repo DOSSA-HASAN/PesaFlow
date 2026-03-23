@@ -58,15 +58,11 @@ export const deleteUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find()
-
-        if (!users) {
-            return successResponse(res, null, "No users found", 200)
-        }
+        const users = await userService.getAllUsers()
 
         return successResponse(res, users, "Success", 200)
     } catch (e) {
-        return errorResponse(res, "Failed to retrieve all users", 500, e)
+        return errorResponse(res, e.message || "Failed to retrieve all users", e.statusCode || 500, e)
     }
 }
 
