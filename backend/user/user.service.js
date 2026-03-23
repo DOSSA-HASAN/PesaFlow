@@ -140,7 +140,6 @@ export const deleteUser = async ({id}) => {
 }
 
 export const getAllUsers = async () => {
-    try {
         const users = await User.find()
 
         if (!users) {
@@ -148,7 +147,20 @@ export const getAllUsers = async () => {
         }
 
         return { users }
-    } catch (e) {
-        return errorResponse(res, "Failed to retrieve all users", 500, e)
-    }
+}
+
+export const getUser = async ({id}) => {
+        if(!id){
+            throw new AppError("Missing query id", 400)
+        }
+
+        const user = await User.findById(id)
+
+        if(!user){
+            throw new AppError("User not found", 404)
+        }
+
+        const {password:_, ...userWithoutPassword} = user
+
+        return {...userWithoutPassword}
 }

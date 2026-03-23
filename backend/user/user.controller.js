@@ -70,17 +70,11 @@ export const getUser = async (req, res) => {
     try {
          const {id} = req.params
 
-        const user = await User.findById(id)
+        const user = await userService.getUser({id})
 
-        if(!user){
-            return errorResponse(res, "User not found", 404)
-        }
-
-        const {password:_, ...userWithoutPassword} = user
-
-        return successResponse(res, ...userWithoutPassword, "Success", 200)
+        return successResponse(res, user, "Success", 200)
 
     } catch (e) {
-        return errorResponse(res, "Failed to fetch user by ID", 500, e)
+        return errorResponse(res, e.message || "Failed to fetch user by ID", e.statusCode || 500, e)
     }
 }
