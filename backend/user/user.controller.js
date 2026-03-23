@@ -1,15 +1,9 @@
-// Create user ✅
-// Login user ✅
-// Update user fields ✅
-// change till number for cashiers ✅
-// Delete user ✅
-// Retrieve all users ✅
-
 import {errorResponse, successResponse} from "../utils/response.js";
 import User from "./user.model.js";
 import bcrypt from "bcryptjs"
 import Till from "../models/tillNumber.model.js";
 import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
+import * as userService from "./user.service.js"
 
 /**
  * @description createUser function that is used to onboard new users to the application.
@@ -22,42 +16,11 @@ export const createUser = async (req, res) => {
         // Extract required fields from request body
         const {email, password, role, tillId} = req.body
 
-        // Return an error if email or password are missing
-        if (!email || !password || !role) {
-            return errorResponse(res, "Missing required fields", 400,)
-        }
-
-        // Check if user with email id already exists
-        const existingUser = await User.findOne({email})
-
-        // Return an error if user with email exists
-        if (existingUser) {
-            return errorResponse(res, "User with email already exists", 401,)
-        }
-
-        // Look up the corresponding tillId if the role is cashier
-        let tillNumber;
-        if (role === "CASHIER") {
-            tillNumber = await Till.findOne({_id: tillId})
-
-            // If no till found, return an error for invalid till Id
-            if (tillNumber == null) {
-                return errorResponse(res, "Invalid Till ID. Corresponding till number not found", 401)
-            }
-        }
-
-        // hash password & create user
-        const hashedPassword = await bcrypt.hash(password, 10)
-        const newUser = await User.create({
-            email,
-            password: hashedPassword,
-            role,
-            tillNumber
-        })
+        const user = await userService.createUser({email, password, role, tillId})
 
         return successResponse(res, null, "User created successfully", 201)
     } catch (e) {
-        return errorResponse(res, "Failed to create user", 500, e)
+        return errorResponse(res, e.message || "Failed to create user", e.statusCode || 500, e)
     }
 }
 
