@@ -5,12 +5,7 @@ import Till from "../models/tillNumber.model.js";
 import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
 import * as userService from "./user.service.js"
 
-/**
- * @description createUser function that is used to onboard new users to the application.
- *              Function can only be invoked by a DEVELOPER or an ADMIN
- * @param req - Express request object
- * @param res - Express request object
- */
+
 export const createUser = async (req, res) => {
     try {
         // Extract required fields from request body
@@ -27,33 +22,11 @@ export const createUser = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const {email, password} = req.body
-        if (!email || !password) {
-            return errorResponse(res, "Invalid credentials", 400)
-        }
-
-        // Look for user
-        const user = await User.findOne({email})
-
-        if (user == null || !user) {
-            return errorResponse(res, "User not found", 401)
-        }
-
-        // compare the passwords if user exists
-        const passwordMatch = await bcrypt.compare(password, user.password)
-
-        if (!passwordMatch) {
-            return errorResponse(res, "Invalid credentials", 401)
-        }
-
-        //TODO: if passwords match return the access and refresh token
-        const payload = {id: user._id, email: user.email, role: user.role}
-        const accessToken = generateAccessToken(payload)
-        const refreshToken = generateRefreshToken(payload)
-        return successResponse(res, {accessToken, refreshToken: refreshToken}, "Login successful", 200)
-
+        const data = await userService.login({email, password})
+        return successResponse(res, data, "Login successful", 200)
 
     } catch (e) {
-        return errorResponse(res, "Failed to login", 500, e)
+        return errorResponse(res, e.message || "Failed to login", e.statusCode || 500, e)
     }
 }
 
