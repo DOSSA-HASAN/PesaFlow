@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import Till from "../models/tillNumber.model.js";
 import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
 import * as userService from "./user.service.js"
+import {publishEvent} from "../events/publisher.js";
 
 
 export const createUser = async (req, res) => {
@@ -12,6 +13,8 @@ export const createUser = async (req, res) => {
         const {email, password, role, tillId} = req.body
 
         const user = await userService.createUser({email, password, role, tillId})
+
+        await publishEvent("SEND_EMAIL", user)
 
         return successResponse(res, null, "User created successfully", 201)
     } catch (e) {
