@@ -38,6 +38,10 @@ export const createUser = async ({email, password, role, tillId}) => {
         role,
         tillNumber
     })
+
+    const {password:_, ...userWithoutPassword} = newUser
+
+    return userWithoutPassword
 }
 
 export const login = async ({email, password}) => {
