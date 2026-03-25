@@ -1,4 +1,5 @@
 import amqp from "amqplib"
+import {AppError} from "../utils/AppError.js";
 
 let channel;
 
