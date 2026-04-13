@@ -1,9 +1,9 @@
-import {getChanngel} from "./connection.js";
+import {getChannel} from "./connection.js";
 
 export const publishEvent = async (queue, data) => {
-    const channel = getChanngel()
+    const channel = getChannel()
 
-    await channel.assertQueue(queue, {durable: true})
+    channel.assertQueue(queue, {durable: true})
 
     channel.sendToQueue(
         queue,
