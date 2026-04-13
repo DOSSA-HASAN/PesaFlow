@@ -35,8 +35,8 @@ export const createUser = async ({email, password, role, tillId}) => {
     const newUser = await User.create({
         email,
         password: hashedPassword,
-        role,
-        tillNumber
+        permissions: role,
+        tillId: tillNumber
     })
 
     const {password:_, ...userWithoutPassword} = newUser
@@ -64,7 +64,7 @@ export const login = async ({email, password}) => {
     }
 
     //TODO: if passwords match return the access and refresh token
-    const payload = {id: user._id, email: user.email, role: user.role}
+    const payload = {id: user._id, email: user.email, permissions: user.permissions}
     const accessToken = generateAccessToken(payload)
     const refreshToken = generateRefreshToken(payload)
     return {
@@ -73,7 +73,7 @@ export const login = async ({email, password}) => {
         user: {
             id: user._id,
             email: user.email,
-            role: user.role,
+            permissions: user.permissions,
         },
     };
 }
@@ -89,7 +89,7 @@ export const updateUserProfile = async ({id, data}) => {
 
         // developer and admin can update:
         // email, password, role, tillNumber
-        const allowedFields = ["email", "password", "role", "tillNumber"]
+        const allowedFields = ["email", "password", "role"]
 
         // check if frontend has sent valid update data
         const updates = Object.keys(data)
@@ -134,7 +134,7 @@ export const deleteUser = async ({id}) => {
             throw new AppError("User not found", 404)
         }
 
-        if (user.role === "DEVELOPER" || user.role === "ADMIN") {
+        if (user.permissions === "DEVELOPER" || user.permissions === "ADMIN") {
             throw new AppError("Cannot delete this user", 400)
         }
 

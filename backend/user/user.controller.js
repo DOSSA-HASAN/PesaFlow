@@ -1,8 +1,4 @@
 import {errorResponse, successResponse} from "../utils/response.js";
-import User from "./user.model.js";
-import bcrypt from "bcryptjs"
-import Till from "../models/tillNumber.model.js";
-import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
 import * as userService from "./user.service.js"
 import {publishEvent} from "../events/publisher.js";
 
@@ -11,8 +7,7 @@ export const createUser = async (req, res) => {
     try {
         // Extract required fields from request body
         const {email, password, role, tillId} = req.body
-
-        const user = await userService.createUser({email, password, role, tillId})
+        const user = await userService.createUser({email, password, permissions: role, tillId})
 
         await publishEvent("SEND_EMAIL", user)
 
