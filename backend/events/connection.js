@@ -10,11 +10,14 @@ export const connectRabbitMQ = async () => {
 
     console.log("Connected to RabbitMQ ✅")
 
+    await channel.assertQueue("SEND_EMAIL", {durable: true})
+    await channel.assertQueue("SEQUELIZE_LOGS", {durable: true})
+
     return channel
 }
 
-export const getChanngel = () => {
-    if(!channel){
+export const getChannel = () => {
+    if (!channel) {
         throw new AppError("RabbitMQ not connected", 500)
     }
     return channel
