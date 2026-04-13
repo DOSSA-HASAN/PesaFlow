@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+import {sequelize} from "../config/db.js";
+import {DataTypes} from "sequelize";
+import {AppError} from "../utils/AppError.js";
 
 /**
  * @file user.model.js
@@ -19,27 +22,58 @@ import mongoose from "mongoose";
  * - timestamps: true, automatically adds createdAt and updatedAt fields
  */
 
-const userModel = new mongoose.Schema({
-    email: {
-        type: String, required: true, unique: true, lowercase: true, trim: true
-    }, password: {
-        type: String, required: true
-    }, role: {
-        type: String, enum: ["DEVELOPER", "ADMIN", "ACCOUNTANT", "CASHIER"], default: "CASHIER"
+const User = sequelize.define("User", {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
     },
-    tillNumber: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Till",
-        default: null,
-        required: function (){
-            return this.role === "CASHIER"
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        set(value){
+            this.setDataValue("email", value.toLowerCase().trim())
+        },
+        validate: {
+            isEmail: true,
+            notEmpty: true
         }
+    }, password: {
+        type: DataTypes.STRING,
+        notNull: true
+    }, permissions: {
+        type: DataTypes.ENUM("cashier", "accountant", "admin", "developer"),
+        defaultValue: "cashier"
+    },
+    tillId: {
+        type: DataTypes.UUID,
+        allowNull: true,
+    },
+    tenantId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        table: "tenant"
     }
 
 }, {
-    timestamps: true
-})
+    timestamps: true,
+    tableName: "users",
 
-const User = mongoose.model("User", userModel)
+    indexes: [
+        {
+            unique: true,
+            fields: ["email", "tenantId"]
+        },
+    ],
+
+    validate: {
+        cashierMustHaveTill(){
+            if(this.role === "cashier"){
+                throw AppError("This permission must have a till id")
+            }
+        }
+    }
+})
 
 export default User
