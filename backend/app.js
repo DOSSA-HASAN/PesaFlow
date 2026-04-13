@@ -4,6 +4,7 @@ import "dotenv/config.js"
 import userRoute from "./user/user.route.js";
 import {connectDb} from "./utils/dbConnection.js";
 import {connectRabbitMQ} from "./events/connection.js";
+import {connectSQL} from "./config/db.js";
 
 const app = express()
 
@@ -12,8 +13,10 @@ app.use(cors({
     credentials: true
 }))
 
-connectDb()
+// TODO: change cluster location, bahrain cluster doesnt work
+await connectDb()
 await connectRabbitMQ()
+await connectSQL()
 
 
 // Routes
