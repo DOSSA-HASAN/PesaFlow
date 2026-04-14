@@ -55,3 +55,20 @@ export const deletePermission = async (req, res) => {
         return errorResponse(res, e.message, 500)
     }
 }
+
+export const updatePermission = async (req, res) => {
+    const {id} = req.params
+    try {
+        if (!id) {
+            return errorResponse(res, "Missing ID param", 400)
+        }
+        const permissionToUpdate = await permissionService.updatePermission(id)
+
+        if (!permissionToUpdate.ok) {
+            return errorResponse(res, permissionToUpdate.message || "Failed to update permission", 400)
+        }
+        return successResponse(res, null, permissionToUpdate.message || "Permission updated successfully", 201)
+    } catch (e) {
+        return errorResponse(res, e.message || "Failed to update permission", e.statusCode || 500)
+    }
+}
