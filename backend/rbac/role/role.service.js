@@ -1,5 +1,4 @@
 import {Role} from "./role.model.js";
-import {Op} from "sequelize";
 
 export const addRole = async (roleName) => {
     try {
@@ -48,5 +47,24 @@ export const getRoleByIdOrName = async (input) => {
 
     } catch (e) {
         return {ok: false, message: "An error occurred while fetching role", errorMessage: e.message}
+    }
+}
+
+export const deleteRole = async (id) => {
+    try {
+        if (!id) {
+            return {ok: false, message: "Missing required ID parameter"}
+        }
+
+        const deletedRole = await Role.destroy({where: {id}})
+
+        if(deletedRole === 0){
+            return {ok: false, message: "Failed to delete role"}
+        }
+
+        return {ok: true, message: "Role deleted successfully"}
+
+    } catch (e) {
+        return {ok: false, message: "An error occurred while deleting role", errorMessage: e.message}
     }
 }
