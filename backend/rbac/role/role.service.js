@@ -1,4 +1,5 @@
 import {Role} from "./role.model.js";
+import {Op} from "sequelize";
 
 export const addRole = async (roleName) => {
     try {
@@ -23,6 +24,29 @@ export const getAllRoles = async () => {
         }
         return {ok: true, message: "Roles fetch successfully", data: roles}
     } catch (e) {
-        return {ok:false, message: "An error occurred while fetching roles"}
+        return {ok: false, message: "An error occurred while fetching roles"}
+    }
+}
+
+export const getRoleByIdOrName = async (input) => {
+    try {
+        if (!input) {
+            return {ok: false, message: "Missing required ID or input parameter"}
+        }
+
+        const whereCondition = isNaN(input) ? {name: input} : {id: input}
+
+        const role = await Role.findOne({
+            where: whereCondition
+        })
+
+        if (!role) {
+            return {ok: false, message: "Failed to fetch role"}
+        }
+
+        return {ok: true, message: "Role fetch successfully", data: role}
+
+    } catch (e) {
+        return {ok: false, message: "An error occurred while fetching role", errorMessage: e.message}
     }
 }
