@@ -41,3 +41,17 @@ export const getPermissionById = async (req, res) => {
         return errorResponse(res, e.message, 500)
     }
 }
+
+export const deletePermission = async (req, res) => {
+    const {id} = req.params
+    try {
+        if (!id) return errorResponse(res, "Missing ID param", 400)
+        const deletedPermission = await permissionService.deletPermission(id)
+        if (!deletedPermission.ok) {
+            return errorResponse(res, deletedPermission.message || "Failed to delete permission", 400)
+        }
+        return successResponse(res, null, deletedPermission.message || "Permission deleted successfully", 201)
+    } catch (e) {
+        return errorResponse(res, e.message, 500)
+    }
+}
