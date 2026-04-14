@@ -10,7 +10,7 @@ export const addPermission = async (req, res) => {
         }
         return successResponse(res, null, response || "Permission added", 201)
     } catch (e) {
-        return errorResponse(res, e.message || "Failed to add permission", 500)
+        return errorResponse(res, e.message || "Failed to add permission", e.statusCode || 500)
     }
 }
 
@@ -22,7 +22,7 @@ export const getAllPermissions = async (req, res) => {
         }
         return successResponse(res, permissions.data, permissions.message || "Permissions fetched successfully")
     } catch (e) {
-        return errorResponse(res, e.message || "Failed to fetch permissions", 500)
+        return errorResponse(res, e.message || "Failed to fetch permissions", e.statusCode || 500)
     }
 }
 
@@ -38,7 +38,7 @@ export const getPermissionById = async (req, res) => {
 
         return successResponse(res, permission.data, permission.message || "Fetched permission successfully", 201)
     } catch (e) {
-        return errorResponse(res, e.message, 500)
+        return errorResponse(res, e.message || "Failed to get permission", e.statusCode || 500)
     }
 }
 
@@ -52,7 +52,7 @@ export const deletePermission = async (req, res) => {
         }
         return successResponse(res, null, deletedPermission.message || "Permission deleted successfully", 201)
     } catch (e) {
-        return errorResponse(res, e.message, 500)
+        return errorResponse(res, e.message || "Failed to delete permission", e.statusCode || 500)
     }
 }
 
