@@ -58,7 +58,7 @@ export const deleteRole = async (id) => {
 
         const deletedRole = await Role.destroy({where: {id}})
 
-        if(deletedRole === 0){
+        if (deletedRole === 0) {
             return {ok: false, message: "Failed to delete role"}
         }
 
@@ -66,5 +66,26 @@ export const deleteRole = async (id) => {
 
     } catch (e) {
         return {ok: false, message: "An error occurred while deleting role", errorMessage: e.message}
+    }
+}
+
+export const updateRole = async (id, name) => {
+    try {
+        if (!id) {
+            return {ok: false, message: "Missing required ID parameter"}
+        }
+        if (!name) {
+            return {ok: false, message: "Missing required name parameter"}
+        }
+        const [count] = await Role.update({name}, {where: {id}})
+
+        if (count === 0) {
+            return {ok: false, message: "Role not found"}
+        }
+
+        return {ok: true, message: "Role updated successfully"}
+
+    } catch (e) {
+        return {ok: false, message: "An error occurred while updating role", errorMessage: e.message}
     }
 }
