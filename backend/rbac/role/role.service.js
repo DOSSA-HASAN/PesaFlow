@@ -1,5 +1,6 @@
 import {Role} from "./role.model.js";
 import {Permission} from "../permission/permission.model.js";
+import {sequelize} from "../../config/db.js";
 
 export const addRole = async (roleName) => {
     try {
@@ -37,8 +38,7 @@ export const getRoleByIdOrName = async (input) => {
         const whereCondition = isNaN(input) ? {name: input} : {id: input}
 
         const role = await Role.findOne({
-            where: whereCondition,
-            include: Permission
+            where: whereCondition, include: Permission
         })
 
         if (!role) {
@@ -93,21 +93,29 @@ export const updateRole = async (id, name) => {
 }
 
 export const assignPermission = async (roleId, permissionIds) => {
+
+    if (!roleId || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+        return {ok: false, message: "Missing required role or permission ID"}
+    }
+
+    const role = await Role.findByPk(roleId)
+    if (!role) {
+        return {ok: false, message: "No role found"}
+    }
+
+    const permissions = await Permission.findAll({where: {id: permissionIds}})
+    if (permissionIds.length !== permissions.length) {
+        return {ok: false, message: "Some permissions do not exist"}
+    }
+    const t = await sequelize.transaction()
     try {
-        if (!roleId || !Array.isArray(permissionIds) || permissionIds.length === 0) {
-            return {ok: false, message: "Missing required role or permission ID"}
-        }
 
-        const role = await Role.findByPk(roleId)
-
-        if (!role) {
-            return {ok: false, message: "No role found"}
-        }
-
-        await role.setPermissions(permissionIds)
+        await role.setPermissions(permissions, {transaction: t})
+        await t.commit()
 
         return {ok: true, message: "Role permissions updated successfully, ask all users to log out and login again"}
     } catch (e) {
+        await t.rollback()
         return {ok: false, message: "An error occurred while assigning permissions to role", errorMessage: e.message}
     }
 }
