@@ -1,4 +1,5 @@
 import {Role} from "./role.model.js";
+import {Permission} from "../permission/permission.model.js";
 
 export const addRole = async (roleName) => {
     try {
@@ -17,7 +18,7 @@ export const addRole = async (roleName) => {
 
 export const getAllRoles = async () => {
     try {
-        const roles = await Roles.findAll()
+        const roles = await Roles.findAll({include: Permission})
         if (!roles) {
             return {ok: false, message: "Failed to fetch roles"}
         }
@@ -36,7 +37,8 @@ export const getRoleByIdOrName = async (input) => {
         const whereCondition = isNaN(input) ? {name: input} : {id: input}
 
         const role = await Role.findOne({
-            where: whereCondition
+            where: whereCondition,
+            include: Permission
         })
 
         if (!role) {
@@ -87,5 +89,25 @@ export const updateRole = async (id, name) => {
 
     } catch (e) {
         return {ok: false, message: "An error occurred while updating role", errorMessage: e.message}
+    }
+}
+
+export const assignPermission = async (roleId, permissionIds) => {
+    try {
+        if (!roleId || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+            return {ok: false, message: "Missing required role or permission ID"}
+        }
+
+        const role = await Role.findByPk(roleId)
+
+        if (!role) {
+            return {ok: false, message: "No role found"}
+        }
+
+        await role.setPermissions(permissionIds)
+
+        return {ok: true, message: "Role permissions updated successfully, ask all users to log out and login again"}
+    } catch (e) {
+        return {ok: false, message: "An error occurred while assigning permissions to role", errorMessage: e.message}
     }
 }
