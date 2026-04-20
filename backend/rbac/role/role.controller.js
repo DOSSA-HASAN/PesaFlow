@@ -54,12 +54,30 @@ export const updateRole = async (req, res, next) => {
         const {id} = req.params
         const {name} = req.body
 
-        if(!id || !name){
+        if (!id || !name) {
             throw new AppError("Missing required fields", 400)
         }
 
         const role = await roleService.updateRole(id)
         return successResponse(res, null, "Role updated successfully", 200)
+    } catch (e) {
+        next(e)
+    }
+}
+
+export const assignPermission = async (req, res, next) => {
+    try {
+        const {id} = req.params
+        const {permissionIds} = req.body // Array of permission ids
+
+        if (!id || !Array.isArray(permissionIds) || permissionIds.length === 0) {
+            throw new AppError("Missing required fields", 400)
+        }
+
+        await roleService.assignPermission(id, permissionIds)
+
+        return successResponse(res, null, "Permissions assigned successfully", 200)
+
     } catch (e) {
         next(e)
     }
