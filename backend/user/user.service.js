@@ -6,28 +6,12 @@ import {AppError} from "../utils/AppError.js";
 import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
 
 export const createUser = async ({email, password, role, tillId}) => {
-    // Return an error if email or password are missing
-    if (!email || !password || !role) {
-        throw new AppError("Missing required fields", 400)
-    }
-
     // Check if user with email id already exists
-    const existingUser = await User.findOne({email})
+    const existingUser = await User.findOne({where: {email}})
 
     // Return an error if user with email exists
     if (existingUser) {
         throw new AppError("User with email already exists", 401)
-    }
-
-    // Look up the corresponding tillId if the role is cashier
-    let tillNumber;
-    if (role === "CASHIER") {
-        tillNumber = await Till.findOne({_id: tillId})
-
-        // If no till found, return an error for invalid till Id
-        if (tillNumber == null) {
-            throw new AppError("Invalid Till ID. Corresponding till number not found", 401)
-        }
     }
 
     // hash password & create user
@@ -36,21 +20,16 @@ export const createUser = async ({email, password, role, tillId}) => {
         email,
         password: hashedPassword,
         permissions: role,
-        tillId: tillNumber
     })
 
-    const {password:_, ...userWithoutPassword} = newUser
+    const {password: _, ...userWithoutPassword} = newUser
 
     return userWithoutPassword
 }
 
 export const login = async ({email, password}) => {
-    if (!email || !password) {
-        throw new AppError("Invalid credentials", 400)
-    }
-
     // Look for user
-    const user = await User.findOne({email})
+    const user = await User.findOne({where: {email}})
 
     if (user == null || !user) {
         throw new AppError("User not found", 401)
@@ -63,7 +42,6 @@ export const login = async ({email, password}) => {
         throw new AppError("Invalid credentials", 401)
     }
 
-    //TODO: if passwords match return the access and refresh token
     const payload = {id: user._id, email: user.email, permissions: user.permissions}
     const accessToken = generateAccessToken(payload)
     const refreshToken = generateRefreshToken(payload)
@@ -78,93 +56,97 @@ export const login = async ({email, password}) => {
     };
 }
 
-export const updateUserProfile = async ({id, data}) => {
-        if (!id) {
-            throw new AppError("Missing user id", 400)
-        }
+export const updateUserProfile = async (id, data) => {
+    if (!id) {
+        throw new AppError("Missing user id", 400)
+    }
 
-        if (!data || typeof data != "object") {
-            throw new AppError("Invalid data", 400)
-        }
+    if (!data || typeof data != "object") {
+        throw new AppError("Invalid data", 400)
+    }
 
-        // developer and admin can update:
-        // email, password, role, tillNumber
-        const allowedFields = ["email", "password", "role"]
+    // developer and admin can update:
+    // email, password, role
+    const allowedFields = ["email", "password", "role"]
 
-        // check if frontend has sent valid update data
-        const updates = Object.keys(data)
-        // validate request updates
-        const isValidUpdate = updates.every(field => allowedFields.includes(field))
+    // check if frontend has sent valid update data
+    const updates = Object.keys(data)
+    // validate request updates
+    const isValidUpdate = updates.every(field => allowedFields.includes(field))
 
-        if (!isValidUpdate) {
-            throw new AppError("You don't have permissions to update some fields", 401)
-        }
+    if (!isValidUpdate) {
+        throw new AppError("You don't have permissions to update some fields", 401)
+    }
 
-        const user = await User.findById(id)
+    const user = await User.findById(id)
 
-        if (!user) {
-            throw new AppError("User not found", 404)
-        }
+    if (!user) {
+        throw new AppError("User not found", 404)
+    }
 
-        // handle data separately
-        if (data.password) {
-            // hash data.password from req
-            user.password = await bcrypt.hash(data.password, 10)
-            delete data.password
-        }
+    // handle data separately
+    if (data.password) {
+        // hash data.password from req
+        user.password = await bcrypt.hash(data.password, 10)
+        delete data.password
+    }
 
-        // Apply remaining updates dynamically
-        updates.forEach(field => {
-            user[field] = data[field]
-        })
+    // Apply remaining updates dynamically
+    updates.forEach(field => {
+        user[field] = data[field]
+    })
 
-        await user.save()
+    await user.save()
 
-        return `${user.email}'s details have been updated succesfully`
+    return true
 }
 
-export const deleteUser = async ({id}) => {
-        if (!id) {
-            throw new AppError("Missing user ID", 400)
-        }
+export const deleteUser = async (id) => {
+    if (!id) {
+        throw new AppError("Missing user ID", 400)
+    }
 
-        const user = await User.findById(id)
+    const user = await User.findById(id)
 
-        if (!user) {
-            throw new AppError("User not found", 404)
-        }
+    if (!user) {
+        throw new AppError("User not found", 404)
+    }
 
-        if (user.permissions === "DEVELOPER" || user.permissions === "ADMIN") {
-            throw new AppError("Cannot delete this user", 400)
-        }
+    if (user.permissions === "DEVELOPER" || user.permissions === "ADMIN") {
+        throw new AppError("Cannot delete this user", 400)
+    }
 
-        await user.deleteOne()
+    const count = await user.deleteOne()
 
-        return `Account associated with email id: ${user.email} has been deleted permanently`
+    if (count === 0) {
+        throw new AppError("User not deleted", 400)
+    }
+
+    return true
 }
 
 export const getAllUsers = async () => {
-        const users = await User.find()
+    const users = await User.find()
 
-        if (!users) {
-            return successResponse(res, null, "No users found", 200)
-        }
+    if (!users || users.length === 0) {
+        throw new AppError("No users found", 404)
+    }
 
-        return { users }
+    return users
 }
 
-export const getUser = async ({id}) => {
-        if(!id){
-            throw new AppError("Missing query id", 400)
-        }
+export const getUser = async (id) => {
+    if (!id) {
+        throw new AppError("Missing query ID", 400)
+    }
 
-        const user = await User.findById(id)
+    const user = await User.findById(id)
 
-        if(!user){
-            throw new AppError("User not found", 404)
-        }
+    if (!user) {
+        throw new AppError("User not found", 404)
+    }
 
-        const {password:_, ...userWithoutPassword} = user
+    const {password: _, ...userWithoutPassword} = user
 
-        return {...userWithoutPassword}
+    return {...userWithoutPassword}
 }
