@@ -46,10 +46,10 @@ const User = sequelize.define("User", {
         type: DataTypes.ENUM("cashier", "accountant", "admin", "developer"),
         defaultValue: "cashier"
     },
-    tillId: {
-        type: DataTypes.UUID,
-        allowNull: true,
-    },
+    // tillId: {
+    //     type: DataTypes.UUID,
+    //     allowNull: true,
+    // },
     tenantId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -67,13 +67,13 @@ const User = sequelize.define("User", {
         },
     ],
 
-    validate: {
-        cashierMustHaveTill(){
-            if(this.role === "cashier"){
-                throw AppError("This permission must have a till id")
-            }
-        }
-    }
+    // validate: {
+    //     cashierMustHaveTill(){
+    //         if(this.role === "cashier"){
+    //             throw AppError("This permission must have a till id")
+    //         }
+    //     }
+    // }
 })
 
 export default User
