@@ -6,10 +6,10 @@ import {authorize} from "../middlewares/checkRole.middleware.js";
 const router = express.Router()
 // ensure developer / admin has a valid accessToken
 router.use(verifyUser, authorize(["DEVELOPER", "ADMIN"]))
-router.post("/register", createUser)
-router.patch("profile/update/:id", updateUserProfile)
-router.delete("user/delete/:id", deleteUser)
-router.get("user/all", getAllUsers)
-router.get("/user/get/:id", getUser)
+router.post("/", createUser)
+router.patch("/:id", updateUserProfile)
+router.delete("/:id", deleteUser)
+router.get("/", getAllUsers)
+router.get("/:id", getUser)
 
 export default router
