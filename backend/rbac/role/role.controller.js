@@ -30,10 +30,20 @@ export const getRoleByIdOrName = async (req, res, next) => {
     try {
         const {field} = req.params
 
-        const role = await roleService.getRoleByIdOrName(field)
+        await roleService.getRoleByIdOrName(field)
 
         return successResponse(res, role, "Role fetched successfully", 200)
 
+    } catch (e) {
+        next(e)
+    }
+}
+
+export const deleteRole = async (req, res, next) => {
+    try {
+        const {id} = req.params
+        const role = await roleService.deleteRole(id)
+        return successResponse(res, null, "Role deleted successfully", 200)
     } catch (e) {
         next(e)
     }
