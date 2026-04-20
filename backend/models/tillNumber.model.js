@@ -1,10 +1,33 @@
 import mongoose from "mongoose";
+import {sequelize} from "../config/db.js";
+import {DataTypes} from "sequelize";
 
-const tillModel = new mongoose.Schema({
-    tillNumber: {type: String, unique: true, required: true},
-    branchName: {type: String, required: true}
-})
-
-const Till = mongoose.model("Till", tillModel)
+const Till = sequelize.define("Till", {
+        id: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true
+        },
+        tillNumber: {
+            type: DataTypes.STRING,
+            unique: true,
+            allowNull: false
+        },
+        branchName: {
+            type: DataTypes.STRING,
+            allowNull: false
+        }
+    },
+    {
+        timestamps: true,
+        indexes: [
+            {
+                unique: true,
+                fields: ["tillNumber", "branchName"]
+            }
+        ],
+        tableName: "till"
+    }
+)
 
 export default Till
