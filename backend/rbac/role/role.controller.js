@@ -30,7 +30,7 @@ export const getRoleByIdOrName = async (req, res, next) => {
     try {
         const {field} = req.params
 
-        await roleService.getRoleByIdOrName(field)
+        const role = await roleService.getRoleByIdOrName(field)
 
         return successResponse(res, role, "Role fetched successfully", 200)
 
