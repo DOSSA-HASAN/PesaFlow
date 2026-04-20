@@ -1,51 +1,59 @@
 import {Permission} from "./permission.model.js";
-import {AppError} from "../utils/AppError.js";
+import {AppError} from "../../utils/AppError.js";
 
 export const addPermission = async (permission) => {
-    // check if db has this permission
-    const response = await Permission.findOne({key: permission})
+    const res = await Permission.findOne({where: {key: permission}})
 
-    if (permission) {
-        return AppError("Permission already exists", 409)
+    if (res) {
+        throw new AppError("Permission already exists", 409)
     }
 
-    await Permission.create(permission)
-    return `Permission: ${permission} added`
+    await Permission.create({key: permission})
+    return true
 }
 
 export const getAllPermissions = async () => {
-    const permissions = await Permission.findAll()
-    return {ok: true, data: permissions}
+    return await Permission.findAll()
 }
 
 export const getPermissionById = async (id) => {
+    if (!id) {
+        throw new AppError("Missing ID parameter", 400)
+    }
     const permission = await Permission.findByPk(id)
     if (!permission) {
-        return {ok: false, message: "Permission not found"}
+        throw new AppError("Permission not found", 404)
     }
-    return {ok: true, data: permission}
+    return permission
 }
 
-export const deletPermission = async (id) => {
+export const deletePermission = async (id) => {
+    if (!id) {
+        throw new AppError("Missing ID parameter", 400)
+    }
     const permission = await Permission.findByPk(id)
 
     if (!permission) {
-        return {ok: false, message: "Permission not found"}
+        throw new AppError("Permission not found", 404)
     }
 
-    await permission.destroy()
-    return {ok: true, message: "Permission deleted"}
+    const count = await permission.destroy()
+    if (count === 0) {
+        throw new AppError("Permission not found", 404)
+    }
+    return true
 }
 
 export const updatePermission = async (id, newKey) => {
+    if (!id || !newKey) {
+        throw new AppError("Missing required parameters")
+    }
     const permission = await Permission.findByPk(id)
     if (!permission) {
-        return {ok: false, message: "Permission not found"}
+        throw new AppError("Permission not found", 404)
     }
-
     permission.key = newKey
     await permission.save()
 
-    return {ok: true, message: "Permission updated"}
-
+    return true
 }
