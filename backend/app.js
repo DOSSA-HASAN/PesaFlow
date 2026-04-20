@@ -5,6 +5,7 @@ import userRoute from "./user/user.route.js";
 import {connectDb} from "./utils/dbConnection.js";
 import {connectRabbitMQ} from "./events/connection.js";
 import {connectSQL} from "./config/db.js";
+import {globalErrorHandler} from "./middlewares/globalErrorHandler.js";
 
 const app = express()
 
@@ -21,5 +22,8 @@ await connectSQL()
 
 // Routes
 app.use("/api/user", userRoute)
+
+
+app.use(globalErrorHandler)
 
 export default app
