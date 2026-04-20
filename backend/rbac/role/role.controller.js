@@ -48,3 +48,19 @@ export const deleteRole = async (req, res, next) => {
         next(e)
     }
 }
+
+export const updateRole = async (req, res, next) => {
+    try {
+        const {id} = req.params
+        const {name} = req.body
+
+        if(!id || !name){
+            throw new AppError("Missing required fields", 400)
+        }
+
+        const role = await roleService.updateRole(id)
+        return successResponse(res, null, "Role updated successfully", 200)
+    } catch (e) {
+        next(e)
+    }
+}
