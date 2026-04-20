@@ -11,7 +11,6 @@ const startWorker = async () => {
     channel.consume(queue, async (msg) => {
         const data = JSON.parse(msg.content.toString())
         try {
-            // TODO: send email using nodemail
             await sendEmail(data.email, "Welcome on board", `Use ur email: ${data.email} to login`)
             console.log(`Sending email to: ${data.email}`)
 
