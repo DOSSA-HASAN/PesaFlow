@@ -1,13 +1,21 @@
-import {getChannel} from "./connection.js";
+import { getChannel } from "./connection.js";
 
 export const publishEvent = async (queue, data) => {
     const channel = getChannel()
 
-    channel.assertQueue(queue, {durable: true})
+    if (!channel) {
+        console.warn("Skipping event (no RabbitMQ)")
+        return;
+    }
+
+    const payload = {
+        ...data,
+        timestamp: Date.now()
+    }
 
     channel.sendToQueue(
         queue,
-        Buffer.from(JSON.stringify(data)),
-        {persistent: true}
+        Buffer.from(JSON.stringify(payload)),
+        { persistent: true }
     )
 }
