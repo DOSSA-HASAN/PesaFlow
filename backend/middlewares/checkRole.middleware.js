@@ -1,5 +1,6 @@
-import {Permission} from "../rbac/permission.model.js";
-import {errorResponse} from "../utils/response.js";
+import { Permission } from "../rbac/permission/permission.model.js";
+import User from "../user/user.model.js";
+import { errorResponse } from "../utils/response.js";
 
 /**
  *
@@ -8,11 +9,11 @@ import {errorResponse} from "../utils/response.js";
 export const authorize = (requiredPermission) => {
     return async (req, res, next) => {
         const user = req.user
-        const userRoles = await user.getRoles({include: Permission})
+        const userRoles = await user.getRoles({ include: [{ model: Permission }] })
 
         const userPermissions = userRoles.flatMap(role => role.Permissions.map(permission => permission.key))
 
-        if(!userPermissions.includes(requiredPermission)){
+        if (!userPermissions.includes(requiredPermission)) {
             return errorResponse(res, "you do not have this permission", 403)
         }
         next()
