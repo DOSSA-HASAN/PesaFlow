@@ -2,10 +2,12 @@ import express from "express"
 import cors from "cors"
 import "dotenv/config.js"
 import userRoute from "./user/user.route.js";
-import {connectDb} from "./utils/dbConnection.js";
-import {connectRabbitMQ} from "./events/connection.js";
-import {connectSQL} from "./config/db.js";
-import {globalErrorHandler} from "./middlewares/globalErrorHandler.js";
+import { connectDb } from "./utils/dbConnection.js";
+import { connectRabbitMQ } from "./events/connection.js";
+import { connectSQL } from "./config/db.js";
+import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
+import permissionRoute from "./rbac/permission/permission.route.js"
+import roleRoute from "./rbac/role/role.route.js"
 
 const app = express()
 
@@ -22,6 +24,8 @@ await connectSQL()
 
 // Routes
 app.use("/api/user", userRoute)
+app.use("/api/permissions", permissionRoute)
+app.use("/api/roles", roleRoute)
 
 
 app.use(globalErrorHandler)
