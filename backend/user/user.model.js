@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-import {sequelize} from "../config/db.js";
-import {DataTypes} from "sequelize";
-import {AppError} from "../utils/AppError.js";
+import { sequelize } from "../config/db.js";
+import { DataTypes } from "sequelize";
+import { AppError } from "../utils/AppError.js";
 
 /**
  * @file user.model.js
@@ -16,7 +16,7 @@ import {AppError} from "../utils/AppError.js";
  * - email: string, required, unique, lowercase, trimmed
  * - password: string, required, hashed (in controller function)
  * - role: string, enum restricted to: ["DEVELOPER", "ADMIN", "ACCOUNTANT", "CASHIER"]
- * - tillNumber: string, required for cashiers only
+ * - tillNumber: string
  *
  * options:
  * - timestamps: true, automatically adds createdAt and updatedAt fields
@@ -32,7 +32,7 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        set(value){
+        set(value) {
             this.setDataValue("email", value.toLowerCase().trim())
         },
         validate: {
@@ -50,11 +50,11 @@ const User = sequelize.define("User", {
     //     type: DataTypes.UUID,
     //     allowNull: true,
     // },
-    tenantId: {
-        type: DataTypes.UUID,
-        allowNull: false,
-        table: "tenant"
-    }
+    // tenantId: {
+    //     type: DataTypes.UUID,
+    //     allowNull: false,
+    //     table: "tenant"
+    // }
 
 }, {
     timestamps: true,
@@ -63,7 +63,7 @@ const User = sequelize.define("User", {
     indexes: [
         {
             unique: true,
-            fields: ["email", "tenantId"]
+            fields: ["email"]
         },
     ],
 
