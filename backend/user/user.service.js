@@ -1,13 +1,14 @@
-import { errorResponse, successResponse } from "../utils/response.js";
+import {errorResponse, successResponse} from "../utils/response.js";
 import User from "./user.model.js";
 import Till from "../models/tillNumber.model.js";
 import bcrypt from "bcryptjs";
-import { AppError } from "../utils/AppError.js";
-import { generateAccessToken, generateRefreshToken } from "../utils/tokenGenerator.js";
+import {AppError} from "../utils/AppError.js";
+import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
+import {Role} from "../rbac/role/role.model.js";
 
-export const createUser = async ({ email, password, role }) => {
+export const createUser = async ({email, password}) => {
     // Check if user with email id already exists
-    const existingUser = await User.findOne({ where: { email } })
+    const existingUser = await User.findOne({where: {email}})
 
     // Return an error if user with email exists
     if (existingUser) {
@@ -19,17 +20,16 @@ export const createUser = async ({ email, password, role }) => {
     const newUser = await User.create({
         email,
         password: hashedPassword,
-        permissions: role,
     })
 
-    const { password: _, ...userWithoutPassword } = newUser
+    const {password: _, ...userWithoutPassword} = newUser
 
     return userWithoutPassword
 }
 
-export const login = async ({ email, password }) => {
+export const login = async ({email, password}) => {
     // Look for user
-    const user = await User.findOne({ where: { email } })
+    const user = await User.findOne({where: {email}, include: [{model: Role}]})
 
     if (user == null || !user) {
         throw new AppError("User not found", 401)
@@ -42,7 +42,8 @@ export const login = async ({ email, password }) => {
         throw new AppError("Invalid credentials", 401)
     }
 
-    const payload = { id: user.id, email: user.email, permissions: user.permissions }
+    const roleNames = user.Roles.map(role => role.name)
+    const payload = {id: user.id, email: user.email, role: roleNames}
     const accessToken = generateAccessToken(payload)
     const refreshToken = generateRefreshToken(payload)
     return {
@@ -66,8 +67,8 @@ export const updateUserProfile = async (id, data) => {
     }
 
     // developer and admin can update:
-    // email, password, role
-    const allowedFields = ["email", "password", "role"]
+    // email, password
+    const allowedFields = ["email", "password"]
 
     // check if frontend has sent valid update data
     const updates = Object.keys(data)
@@ -140,13 +141,13 @@ export const getUser = async (id) => {
         throw new AppError("Missing query ID", 400)
     }
 
-    const user = await User.findById(id)
+    const user = await User.findByPk(id)
 
     if (!user) {
         throw new AppError("User not found", 404)
     }
 
-    const { password: _, ...userWithoutPassword } = user
+    const {password: _, ...userWithoutPassword} = user
 
-    return { ...userWithoutPassword }
+    return {...userWithoutPassword}
 }
