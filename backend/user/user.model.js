@@ -42,10 +42,11 @@ const User = sequelize.define("User", {
     }, password: {
         type: DataTypes.STRING,
         notNull: true
-    }, permissions: {
-        type: DataTypes.ENUM("cashier", "accountant", "admin", "developer"),
-        defaultValue: "cashier"
     },
+    // permissions: {
+    //     type: DataTypes.ENUM("cashier", "accountant", "admin", "developer"),
+    //     defaultValue: "cashier"
+    // },
     // tillId: {
     //     type: DataTypes.UUID,
     //     allowNull: true,
