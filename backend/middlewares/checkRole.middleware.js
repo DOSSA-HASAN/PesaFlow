@@ -9,7 +9,7 @@ import { errorResponse } from "../utils/response.js";
 export const authorize = (requiredPermission) => {
     return async (req, res, next) => {
         const user = req.user
-        const userRoles = await user.getRoles({ include: [{ model: Permission }] })
+        const userRoles = user.role || await user.getRoles({ include: [{ model: Permission }] })
 
         const userPermissions = userRoles.flatMap(role => role.Permissions.map(permission => permission.key))
 
