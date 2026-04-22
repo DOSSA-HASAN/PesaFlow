@@ -14,7 +14,7 @@ export const addRole = async (roleName) => {
 }
 
 export const getAllRoles = async () => {
-    return await Role.findAll({include: Permission})
+    return await Role.findAll({include: [{model: Permission}]})
 }
 
 export const getRoleByIdOrName = async (input) => {
