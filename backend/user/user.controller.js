@@ -7,13 +7,13 @@ import {AppError} from "../utils/AppError.js";
 export const createUser = async (req, res, next) => {
     try {
         // Extract required fields from request body
-        const {email, password, role} = req.body
+        const {email, password} = req.body
 
-        if(!email || !password || !role){
+        if(!email || !password){
             throw new AppError("Missing required fields", 400)
         }
 
-        const user = await userService.createUser({email, password, permissions: role})
+        const user = await userService.createUser({email, password})
 
         publishEvent("SEND_EMAIL", user)
 
