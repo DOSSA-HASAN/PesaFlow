@@ -4,7 +4,7 @@ import {DataTypes} from "sequelize";
 export const Permission = sequelize.define("Permission", {
     id: {
         type: DataTypes.UUID,
-        default: DataTypes.UUIDV4,
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true
     },
     key: {
