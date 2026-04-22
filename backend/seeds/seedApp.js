@@ -1,14 +1,17 @@
-import { getChannel } from "../events/connection.js"
-import { publishEvent } from "../events/publisher.js"
+import {getChannel} from "../events/connection.js"
+import {publishEvent} from "../events/publisher.js"
 import User from "../user/user.model.js"
-import { successResponse } from "../utils/response.js"
+import {successResponse} from "../utils/response.js"
 import bcrypt from "bcryptjs"
 import "dotenv/config.js"
 import {Role} from "../rbac/role/role.model.js";
 import {Permission} from "../rbac/permission/permission.model.js";
+import {sequelize} from "../config/db.js";
 
-export const seedDevUser = async (req, res, next) => {
+export const seedApp = async (req, res, next) => {
     try {
+
+        await sequelize.sync({force: true})
 
         const email = "notyetdoc911@gmail.com"
         const password = await bcrypt.hash("12345", 10) // Less secure password for testing
@@ -20,13 +23,16 @@ export const seedDevUser = async (req, res, next) => {
             permissions: role
         })
 
-        await publishEvent("SEND_EMAIL", { type: "WELCOME MAIL", email: seedUser.email })
+        await publishEvent("SEND_EMAIL", {type: "WELCOME MAIL", email: seedUser.email})
 
         // Create roles
         const cashier = await Role.create({name: "cashier"})
         const accountant = await Role.create({name: "accountant"})
         const admin = await Role.create({name: "admin"})
         const developer = await Role.create({name: "developer"})
+
+        // Assign seedUser with role 'developer'
+        seedUser.setRoles([developer])
 
         // Create user permissions
         const userCreate = await Permission.create({key: "user.create"})
