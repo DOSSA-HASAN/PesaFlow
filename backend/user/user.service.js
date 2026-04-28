@@ -1,35 +1,55 @@
-import {errorResponse, successResponse} from "../utils/response.js";
+import { errorResponse, successResponse } from "../utils/response.js";
 import User from "./user.model.js";
 import Till from "../models/tillNumber.model.js";
 import bcrypt from "bcryptjs";
-import {AppError} from "../utils/AppError.js";
-import {generateAccessToken, generateRefreshToken} from "../utils/tokenGenerator.js";
-import {Role} from "../rbac/role/role.model.js";
+import { AppError } from "../utils/AppError.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/tokenGenerator.js";
+import { Role, Permission } from "../models/index.js";
+import { sequelize } from "../config/db.js";
 
-export const createUser = async ({email, password}) => {
+export const createUser = async ({ email, password, roleId }) => {
     // Check if user with email id already exists
-    const existingUser = await User.findOne({where: {email}})
+    const existingUser = await User.findOne({ where: { email } })
 
     // Return an error if user with email exists
     if (existingUser) {
         throw new AppError("User with email already exists", 401)
     }
 
-    // hash password & create user
-    const hashedPassword = await bcrypt.hash(password, 10)
-    const newUser = await User.create({
-        email,
-        password: hashedPassword,
-    })
+    const role = await Role.findByPk(roleId)
+    if (!role) {
+        throw new AppError("Role not found", 404)
+    }
 
-    const {password: _, ...userWithoutPassword} = newUser
+    const t = await sequelize.transaction()
+    try {
+        // hash password & create user
+        const hashedPassword = await bcrypt.hash(password, 10)
+        const newUser = await User.create(
+            {
+                email,
+                password: hashedPassword,
+            },
+            { transaction: t }
+        )
 
-    return userWithoutPassword
+        const assignRole = await newUser.setRoles([role], { transaction: t })
+
+        await t.commit()
+
+        const { password: _, ...userWithoutPassword } = newUser
+        return userWithoutPassword
+
+    } catch (error) {
+        await t.rollback()
+        throw error
+    }
+    return;
 }
 
-export const login = async ({email, password}) => {
+export const login = async ({ email, password }) => {
     // Look for user
-    const user = await User.findOne({where: {email}, include: [{model: Role}]})
+    const user = await User.findOne({ where: { email }, include: [{ model: Role }] })
 
     if (user == null || !user) {
         throw new AppError("User not found", 401)
@@ -43,7 +63,7 @@ export const login = async ({email, password}) => {
     }
 
     const roleNames = user.Roles.map(role => role.name)
-    const payload = {id: user.id, email: user.email, role: roleNames}
+    const payload = { id: user.id, email: user.email, role: roleNames }
     const accessToken = generateAccessToken(payload)
     const refreshToken = generateRefreshToken(payload)
     return {
@@ -79,7 +99,7 @@ export const updateUserProfile = async (id, data) => {
         throw new AppError("You don't have permissions to update some fields", 401)
     }
 
-    const user = await User.findById(id)
+    const user = await User.findByPk(id)
 
     if (!user) {
         throw new AppError("User not found", 404)
@@ -97,9 +117,9 @@ export const updateUserProfile = async (id, data) => {
         user[field] = data[field]
     })
 
-    await user.save()
+    const updatedUser = await user.save()
 
-    return true
+    return updatedUser
 }
 
 export const deleteUser = async (id) => {
@@ -107,7 +127,7 @@ export const deleteUser = async (id) => {
         throw new AppError("Missing user ID", 400)
     }
 
-    const user = await User.findById(id)
+    const user = await User.findByPk(id)
 
     if (!user) {
         throw new AppError("User not found", 404)
@@ -117,17 +137,13 @@ export const deleteUser = async (id) => {
         throw new AppError("Cannot delete this user", 400)
     }
 
-    const count = await user.deleteOne()
-
-    if (count === 0) {
-        throw new AppError("User not deleted", 400)
-    }
+    await user.destroy()
 
     return true
 }
 
 export const getAllUsers = async () => {
-    const users = await User.find()
+    const users = await User.findAll({ attributes: { exclude: ["password"] } })
 
     if (!users || users.length === 0) {
         throw new AppError("No users found", 404)
@@ -136,18 +152,43 @@ export const getAllUsers = async () => {
     return users
 }
 
-export const getUser = async (id) => {
-    if (!id) {
+export const getUser = async (field) => {
+    if (!field) {
         throw new AppError("Missing query ID", 400)
     }
 
-    const user = await User.findByPk(id)
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field);
+    const isUUID = /^[0-9a-fA-F-]{36}$/.test(field);
+
+    if (!isEmail && !isUUID) {
+        throw new AppError("Invalid identifier format", 400);
+    }
+
+    const whereCondition = isEmail ? { email: field } : { id: field }
+
+    console.log(whereCondition)
+
+    const user = await User.findOne({ where: whereCondition, attributes: { exclude: ["password"] }, include: [{ model: Role, include: [{ model: Permission }] }], })
 
     if (!user) {
         throw new AppError("User not found", 404)
     }
 
-    const {password: _, ...userWithoutPassword} = user
+    return { user }
+}
 
-    return {...userWithoutPassword}
+export const setUserRoles = async (userId, roleIds) => {
+    const user = await User.findByPk(userId)
+    if (!user) {
+        throw new AppError("User not found", 404)
+    }
+
+    const roles = await Role.findAll({ where: { id: roleIds } })
+    const uniqueRoleIds = new Set(roleIds)
+    if (roles.length !== uniqueRoleIds.size) {
+        throw new AppError("Some roles not found")
+    }
+
+    await user.setRoles(roles)
+    return true
 }
