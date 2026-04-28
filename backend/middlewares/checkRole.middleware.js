@@ -7,13 +7,18 @@ import { errorResponse } from "../utils/response.js";
  * @param requiredPermission an array that includes the permissions for each route
  */
 export const authorize = (requiredPermission) => {
+
+    const requiredPermissionsArray = Array.isArray(requiredPermission) ? requiredPermission : Array(requiredPermission)
+
     return async (req, res, next) => {
         const user = req.user
         const userRoles = user.role || await user.getRoles({ include: [{ model: Permission }] })
 
         const userPermissions = userRoles.flatMap(role => role.Permissions.map(permission => permission.key))
 
-        if (!userPermissions.includes(requiredPermission)) {
+        const hasPermissions = requiredPermissionsArray.some(permission => userPermissions.includes(permission))
+
+        if (!hasPermissions) {
             return errorResponse(res, "you do not have this permission", 403)
         }
         next()
