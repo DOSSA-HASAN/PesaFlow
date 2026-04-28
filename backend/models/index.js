@@ -7,7 +7,7 @@ import {sequelize} from "../config/db.js";
 // User.belongsTo(Tenant, {foreignKey: "tenantId", as: "tenant"})
 
 User.belongsToMany(Role, {through: "UserRoles"})
-Role.belongsToMany(User, {through: "UserRoles"})
+Role.belongsToMany(User, {through: "UserRoles"})    
 
 const RolePermissions = sequelize.define("RolePermission", {}, {timestamps: true})
 
