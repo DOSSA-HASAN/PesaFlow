@@ -69,8 +69,8 @@ export const updateRole = async (req, res, next) => {
             throw new AppError("Missing required fields", 400)
         }
 
-        const role = await roleService.updateRole(id)
-        return successResponse(res, null, "Role updated successfully", 200)
+        const role = await roleService.updateRole(id, name)
+        return successResponse(res, role, "Role updated successfully", 200)
     } catch (e) {
         next(e)
     }
