@@ -66,13 +66,15 @@ export const deleteRole = async (id) => {
 }
 
 export const updateRole = async (id, name) => {
-    const [count] = await Role.update({ name }, { where: { id } })
+    const [count, updatedRoles] = await Role.update({ name }, { where: { id }, returning: true })
 
     if (count === 0) {
         throw new AppError("Role not found", 404)
     }
 
-    return true
+    const updatedRole = updatedRoles[0]
+
+    return updatedRole
 }
 
 export const assignPermission = async (roleId, permissionIds) => {
