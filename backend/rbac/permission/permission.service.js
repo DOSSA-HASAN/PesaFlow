@@ -1,15 +1,16 @@
-import {Permission} from "./permission.model.js";
-import {AppError} from "../../utils/AppError.js";
+import { Permission } from "./permission.model.js";
+import { AppError } from "../../utils/AppError.js";
+import { where } from "sequelize";
 
 export const addPermission = async (permission) => {
-    const res = await Permission.findOne({where: {key: permission}})
+    const res = await Permission.findOne({ where: { key: permission } })
 
     if (res) {
         throw new AppError("Permission already exists", 409)
     }
 
-    await Permission.create({key: permission})
-    return true
+    const createdPermission = await Permission.create({ key: permission })
+    return createdPermission
 }
 
 export const getAllPermissions = async () => {
@@ -52,8 +53,10 @@ export const updatePermission = async (id, newKey) => {
     if (!permission) {
         throw new AppError("Permission not found", 404)
     }
-    permission.key = newKey
-    await permission.save()
 
-    return true
+    permission.update({
+        where: { id },
+        key: newKey
+    })
+    return permission
 }
