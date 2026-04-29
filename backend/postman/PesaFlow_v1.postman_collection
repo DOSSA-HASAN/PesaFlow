@@ -1,0 +1,564 @@
+{
+  "info": {
+    "_postman_id": "c09ab7a0-b6a3-4988-8e04-a5e6e2613675",
+    "name": "PesaFlow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53603758",
+    "_collection_link": "https://go.postman.co/collection/53603758-c09ab7a0-b6a3-4988-8e04-a5e6e2613675?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"developer@gmail.com\",\r\n    \"password\": \"12345\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "user",
+      "item": [
+        {
+          "name": "Create user",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"deleteuser@gmail.com\",\r\n    \"password\": \"12345\",\r\n    \"roleId\": \"ca3e1147-fbb9-435b-a7d7-18eef51ab371\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set user role",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"roleIds\": [\r\n        \"ea9d595a-d946-45d9-a9bf-15f58535e917\", // Developer ID\r\n        \"ca3e1147-fbb9-435b-a7d7-18eef51ab371\" // Cashier ID\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/8f0d716a-6e63-48bd-8cb7-118a064daf45/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "8f0d716a-6e63-48bd-8cb7-118a064daf45",
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all users",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"deleteuser@gmail.com\",\r\n    \"password\": \"12345\",\r\n    \"roleId\": \"ca3e1147-fbb9-435b-a7d7-18eef51ab371\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get user",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"deleteuser@gmail.com\",\r\n    \"password\": \"12345\",\r\n    \"roleId\": \"ca3e1147-fbb9-435b-a7d7-18eef51ab371\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/2cae0cd6-43bd-4fa9-9a10-60fc083326c5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "2cae0cd6-43bd-4fa9-9a10-60fc083326c5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update user",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"data\": {\r\n        \"email\": \"delete@gmail.com\",\r\n        \"password\": \"12345\"\r\n    }\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/user/feb66290-2e5f-4a87-854e-8770ab16cb47",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "feb66290-2e5f-4a87-854e-8770ab16cb47"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "New Request",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"data\": {\r\n        \"email\": \"delete@gmail.com\",\r\n        \"password\": \"12345\"\r\n    }\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/user/feb66290-2e5f-4a87-854e-8770ab16cb47",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "user",
+                "feb66290-2e5f-4a87-854e-8770ab16cb47"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "permissions",
+      "item": [
+        {
+          "name": "Add permission",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"permission\": \"permission.update\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all permissions",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get permission",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions/05a3c017-95e6-4df7-9169-97ebb679e389",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "05a3c017-95e6-4df7-9169-97ebb679e389"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete permission",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/permissions/1b228525-dd76-4aa9-b738-36bb65a94468",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "1b228525-dd76-4aa9-b738-36bb65a94468"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update permission",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"permission\": \"test.update-v2\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/permissions/05a3c017-95e6-4df7-9169-97ebb679e389",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "permissions",
+                "05a3c017-95e6-4df7-9169-97ebb679e389"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "roles",
+      "item": [
+        {
+          "name": "Add role",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"roleName\": \"TESTER\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get all roles",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"roleName\": \"TESTER\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get role by name",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/name/admin",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "name",
+                "admin"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get role by ID",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"roleName\": \"TESTER\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/id/c6507fd1-8ff3-4405-99f0-3b600babdf8f",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "id",
+                "c6507fd1-8ff3-4405-99f0-3b600babdf8f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/id/c6507fd1-8ff3-4405-99f0-3b600babdf8f",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "id",
+                "c6507fd1-8ff3-4405-99f0-3b600babdf8f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update role",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"TESTER-UPDATED\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/137c9524-02e2-4567-aeb2-e1d98487fd5e",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "137c9524-02e2-4567-aeb2-e1d98487fd5e"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Role",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/137c9524-02e2-4567-aeb2-e1d98487fd5e",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "137c9524-02e2-4567-aeb2-e1d98487fd5e"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign permissions to role",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"permissionIds\": [\r\n        \"05a3c017-95e6-4df7-9169-97ebb679e389\"\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/roles/c0569d9d-0a19-4eb2-b658-00c2b9fede31/permissions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "c0569d9d-0a19-4eb2-b658-00c2b9fede31",
+                "permissions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJjYWUwY2Q2LTQzYmQtNGZhOS05YTEwLTYwZmMwODMzMjZjNSIsImVtYWlsIjoibm90eWV0ZG9jOTExQGdtYWlsLmNvbSIsInJvbGUiOlsiY2FzaGllciIsImRldmVsb3BlciJdLCJpYXQiOjE3Nzc0NDQ1OTUsImV4cCI6MTc3NzQ0ODE5NX0.QQY2R5njdNBo3HMV--kjXkzFdtGOu2qfd1zZ1zO3z4E",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    }
+  ]
+}
