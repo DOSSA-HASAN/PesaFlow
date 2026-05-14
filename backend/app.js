@@ -10,6 +10,9 @@ import { globalErrorHandler } from "./middlewares/globalErrorHandler.js";
 import permissionRoute from "./rbac/permission/permission.route.js"
 import roleRoute from "./rbac/role/role.route.js"
 import authRoute from "./routes/auth.route.js"
+import mpesaRoute from "./mpesa/mpesa.route.js"
+import paymentAccountRoute from "./mpesaAccount/payment_account.route.js"
+import {connectRedis} from "./utils/redisClient.js";
 
 const app = express()
 
@@ -21,9 +24,10 @@ app.use(cors({
 }))
 
 // TODO: change cluster location, bahrain cluster doesnt work
-await connectDb()
+// await connectDb()
 await connectRabbitMQ()
 await connectSQL()
+await connectRedis()
 
 
 // Routes
@@ -31,6 +35,8 @@ app.use("/api/auth", authRoute)
 app.use("/api/user", userRoute)
 app.use("/api/permissions", permissionRoute)
 app.use("/api/roles", roleRoute)
+app.use("/api/mpesa", mpesaRoute)
+app.use("/api/payment_account", paymentAccountRoute)
 
 
 app.use(globalErrorHandler)
