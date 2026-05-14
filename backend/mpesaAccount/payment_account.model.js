@@ -1,14 +1,13 @@
-import mongoose from "mongoose";
 import {sequelize} from "../config/db.js";
 import {DataTypes} from "sequelize";
 
-const Till = sequelize.define("Till", {
+const payment_account = sequelize.define("PaymentAccount", {
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true
         },
-        tillNumber: {
+        accountNumber: {
             type: DataTypes.STRING,
             unique: true,
             allowNull: false
@@ -16,6 +15,15 @@ const Till = sequelize.define("Till", {
         branchName: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        type: {
+            type: DataTypes.ENUM("PAYBILL", "TILL"),
+            allowNull: false
+        },
+        credentialsSecretId: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true
         }
     },
     {
@@ -23,11 +31,12 @@ const Till = sequelize.define("Till", {
         indexes: [
             {
                 unique: true,
-                fields: ["tillNumber", "branchName"]
+                fields: ["accountNumber", "branchName"]
             }
         ],
-        tableName: "till"
+        tableName: "payment_account"
     }
 )
 
-export default Till
+
+export default payment_account
