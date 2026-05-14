@@ -1,6 +1,4 @@
-import { errorResponse, successResponse } from "../utils/response.js";
 import User from "./user.model.js";
-import Till from "../models/tillNumber.model.js";
 import bcrypt from "bcryptjs";
 import { AppError } from "../utils/AppError.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokenGenerator.js";
