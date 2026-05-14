@@ -24,6 +24,10 @@ const payment_account = sequelize.define("PaymentAccount", {
             type: DataTypes.STRING,
             allowNull: false,
             unique: true
+        },
+        isBlocked: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
         }
     },
     {
