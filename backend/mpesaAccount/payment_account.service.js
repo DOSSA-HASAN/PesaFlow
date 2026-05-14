@@ -1,18 +1,12 @@
-// Func to get all till numbers
-// Func to update till number
-// Func to delete till number
-// Func to get specific till Number
-// Func to add till number
-
 import PaymentAccount from "./payment_account.model.js";
 import {AppError} from "../utils/AppError.js";
 
 export const addPaymentAccount = async (accountNumber, type, branchName) => {
-    if (type !== "PAYBILL" && type !== "TILL") {
+    if (type.toUpperCase() !== "PAYBILL" && type.toUpperCase() !== "TILL") {
         throw new AppError("Account type can only be 'PAYBILL' or 'TILL'", 409)
     }
 
-    const modBranchName = branchName.toString().trim().toLowerCase()
+    const modBranchName = branchName.toString().trim().toUpperCase()
 
     const exists = await PaymentAccount.findOne({
         where: {accountNumber, branchName: modBranchName}
@@ -26,7 +20,7 @@ export const addPaymentAccount = async (accountNumber, type, branchName) => {
 
     const account = await PaymentAccount.create({
         accountNumber,
-        type,
+        type: type.toUpperCase(),
         branchName: modBranchName,
         credentialsSecretId: `mpesa/${accountNumber}/${type}`
     })
@@ -40,19 +34,15 @@ export const getAllPaymentAccounts = async () => {
 }
 
 export const getPaymentAccount = async (q) => {
-    // type
-    // accountNumber
-    // branchName
-
     const query = {}
 
-    if(q.type){
+    if (q.type) {
         query.type = q.type
     }
-    if(q.accountNumber){
+    if (q.accountNumber) {
         query.accountNumber = q.accountNumber
     }
-    if(q.branchName){
+    if (q.branchName) {
         query.branchName = q.branchName
     }
 
@@ -61,6 +51,59 @@ export const getPaymentAccount = async (q) => {
     const account = await PaymentAccount.findOne({
         where: query
     })
+    console.log(account)
+
+    if(account){
+        return account
+    }
+
+    return "Account not found"
+}
+
+export const updatePaymentAccount = async (id, data) => {
+    /**
+    * TODO:
+        * if incoming data has secretCredentialsId we need to update aws secret id since its the id we
+        * will use to fetch the secret key and consumer key
+    **/
+    const [account] = await PaymentAccount.update(
+        data,
+        {
+            where: {id}
+        }
+    )
+
+    if(account === 0){
+        throw new AppError("Update failed. Ensure payment account exists", 404)
+    }
 
     return account
+}
+
+export const blockPaymentAccount = async (id) => {
+    const account = await PaymentAccount.update(
+        {isBlocked: true},
+        {
+            where: {id}
+        }
+    )
+    if(account === 0){
+        return "Account not found"
+    }
+    return "Account blocked successfully"
+}
+
+export const unblockPaymentAccount = async (id) => {
+    const [account] = await PaymentAccount.update(
+        {isBlocked: false},
+        {
+            where: {id}
+        }
+    )
+
+        if(account === 0){
+            throw new AppError("Account not found", 404)
+        }
+
+        return account
 }
