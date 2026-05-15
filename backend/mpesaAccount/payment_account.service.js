@@ -52,20 +52,16 @@ export const getPaymentAccount = async (q) => {
         where: query
     })
     console.log(account)
+    return account
 
-    if(account){
-        return account
-    }
-
-    return "Account not found"
 }
 
 export const updatePaymentAccount = async (id, data) => {
     /**
-    * TODO:
-        * if incoming data has secretCredentialsId we need to update aws secret id since its the id we
-        * will use to fetch the secret key and consumer key
-    **/
+     * TODO:
+     * if incoming data has secretCredentialsId we need to update aws secret id since its the id we
+     * will use to fetch the secret key and consumer key
+     **/
     const [account] = await PaymentAccount.update(
         data,
         {
@@ -73,7 +69,7 @@ export const updatePaymentAccount = async (id, data) => {
         }
     )
 
-    if(account === 0){
+    if (account === 0) {
         throw new AppError("Update failed. Ensure payment account exists", 404)
     }
 
@@ -87,7 +83,7 @@ export const blockPaymentAccount = async (id) => {
             where: {id}
         }
     )
-    if(account === 0){
+    if (account === 0) {
         return "Account not found"
     }
     return "Account blocked successfully"
@@ -101,9 +97,9 @@ export const unblockPaymentAccount = async (id) => {
         }
     )
 
-        if(account === 0){
-            throw new AppError("Account not found", 404)
-        }
+    if (account === 0) {
+        throw new AppError("Account not found", 404)
+    }
 
-        return account
+    return account
 }
