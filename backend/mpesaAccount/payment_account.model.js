@@ -1,7 +1,7 @@
 import {sequelize} from "../config/db.js";
 import {DataTypes} from "sequelize";
 
-const payment_account = sequelize.define("PaymentAccount", {
+const PaymentAccount = sequelize.define("PaymentAccount", {
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -49,4 +49,4 @@ const payment_account = sequelize.define("PaymentAccount", {
 )
 
 
-export default payment_account
+export default PaymentAccount
