@@ -14,11 +14,17 @@ const payment_account = sequelize.define("PaymentAccount", {
         },
         branchName: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            set(value){
+                this.setDataValue("branchName", value?.toUpperCase())
+            }
         },
         type: {
             type: DataTypes.ENUM("PAYBILL", "TILL"),
-            allowNull: false
+            allowNull: false,
+            set(value){
+                this.setDataValue("type", value?.toUpperCase())
+            }
         },
         credentialsSecretId: {
             type: DataTypes.STRING,

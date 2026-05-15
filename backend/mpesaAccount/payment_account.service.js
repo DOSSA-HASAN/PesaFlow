@@ -37,13 +37,13 @@ export const getPaymentAccount = async (q) => {
     const query = {}
 
     if (q.type) {
-        query.type = q.type
+        query.type = q.type.toUpperCase()
     }
     if (q.accountNumber) {
         query.accountNumber = q.accountNumber
     }
     if (q.branchName) {
-        query.branchName = q.branchName
+        query.branchName = q.branchName.toUpperCase()
     }
 
     console.log(query)
