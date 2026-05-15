@@ -28,7 +28,7 @@ export const getAllPaymentAccounts = async (req, res, next) => {
             }
         } else {
             const account = await paymentService.getPaymentAccount(query)
-            if (typeof account === "string") {
+            if (!account) {
                 return successResponse(res, null, "Payment account not found", 200)
             } else {
                 return successResponse(res, account, "Fetched payment account successfully", 200)
