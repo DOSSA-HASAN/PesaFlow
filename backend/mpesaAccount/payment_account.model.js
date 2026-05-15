@@ -15,14 +15,14 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
         branchName: {
             type: DataTypes.STRING,
             allowNull: false,
-            set(value){
+            set(value) {
                 this.setDataValue("branchName", value?.toUpperCase())
             }
         },
         type: {
             type: DataTypes.ENUM("PAYBILL", "TILL"),
             allowNull: false,
-            set(value){
+            set(value) {
                 this.setDataValue("type", value?.toUpperCase())
             }
         },
@@ -33,7 +33,8 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
         },
         isBlocked: {
             type: DataTypes.BOOLEAN,
-            allowNull: true
+            allowNull: true,
+            defaultValue: false
         }
     },
     {
@@ -44,7 +45,7 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
                 fields: ["accountNumber", "branchName"]
             }
         ],
-        tableName: "payment_account"
+        tableName: "PaymentAccount"
     }
 )
 
