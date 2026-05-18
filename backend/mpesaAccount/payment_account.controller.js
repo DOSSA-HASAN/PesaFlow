@@ -44,7 +44,7 @@ export const updatePaymentAccount = async (req, res, next) => {
         const {id} = req.params
         const data = req.body
 
-        if (!id || !data) {
+        if (!id || !data || Object.keys(data).length === 0) {
             throw new AppError("Missing required fields", 400)
         }
 
