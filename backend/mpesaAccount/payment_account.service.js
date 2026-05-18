@@ -33,18 +33,15 @@ export const getPaymentAccount = async (q) => {
     const query = {}
 
     if (q.accountNumber) {
-        query.accountNumber = q.accountNumber
+        query.accountNumber = q.accountNumber.toString().trim()
     }
     if (q.branchName) {
-        query.branchName = q.branchName.toUpperCase()
+        query.branchName = q.branchName.toUpperCase().trim()
     }
-
-    console.log(query)
 
     const account = await PaymentAccount.findOne({
         where: query
     })
-    console.log(account)
     return account
 
 }
@@ -55,8 +52,17 @@ export const updatePaymentAccount = async (id, data) => {
      * if incoming data has secretCredentialsId we need to update aws secret id since its the id we
      * will use to fetch the secret key and consumer key
      **/
+    const normalisedData = Object.keys(data).map(([key, value]) => {
+        if (typeof value === "string"){
+            return [
+                key,
+                value.trim().toUpperCase()
+            ]
+        }
+        return [key, value]
+    })
     const [account] = await PaymentAccount.update(
-        data,
+        normalisedData,
         {
             where: {id}
         }
@@ -70,7 +76,7 @@ export const updatePaymentAccount = async (id, data) => {
 }
 
 export const blockPaymentAccount = async (id) => {
-    const account = await PaymentAccount.update(
+    const [account] = await PaymentAccount.update(
         {isBlocked: true},
         {
             where: {id}
