@@ -77,7 +77,7 @@ export const blockPaymentAccount = async (id) => {
         }
     )
     if (account === 0) {
-        return "Account not found"
+        throw new AppError("Account not found", 404)
     }
     return "Account blocked successfully"
 }
