@@ -4,12 +4,12 @@ import {AppError} from "../utils/AppError.js";
 
 export const addPaymentAccount = async (req, res, next) => {
     try {
-        const {accountNumber, type, branch} = req.body
-        if (!accountNumber || !type || !branch) {
-            throw new AppError("Missing required fields (account number / account type / branch)", 400)
+        const {accountNumber, branch} = req.body
+        if (!accountNumber || !branch) {
+            throw new AppError("Missing required fields (account number / branch)", 400)
         }
 
-        const account = await paymentService.addPaymentAccount(accountNumber, type, branch)
+        const account = await paymentService.addPaymentAccount(accountNumber, branch)
         return successResponse(res, null, account, 201)
     } catch (e) {
         next(e)
@@ -46,12 +46,6 @@ export const updatePaymentAccount = async (req, res, next) => {
 
         if (!id || !data) {
             throw new AppError("Missing required fields", 400)
-        }
-
-        if (data.type) {
-            if (data.accountNumber) {
-                data.credentialsSecretId = `mpesa/${data.accountNumber}/${data.type}`
-            }
         }
 
         const updatedAccount = await paymentService.updatePaymentAccount(id, data)

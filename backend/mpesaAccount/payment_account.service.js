@@ -1,11 +1,7 @@
 import PaymentAccount from "./payment_account.model.js";
 import {AppError} from "../utils/AppError.js";
 
-export const addPaymentAccount = async (accountNumber, type, branchName) => {
-    if (type.toUpperCase() !== "PAYBILL" && type.toUpperCase() !== "TILL") {
-        throw new AppError("Account type can only be 'PAYBILL' or 'TILL'", 409)
-    }
-
+export const addPaymentAccount = async (accountNumber, branchName) => {
     const modBranchName = branchName.toString().trim().toUpperCase()
 
     const exists = await PaymentAccount.findOne({
@@ -17,15 +13,15 @@ export const addPaymentAccount = async (accountNumber, type, branchName) => {
     }
 
     const businessId = process.env.BUSINESS_ID
-
+    const accountType = process.env.MPESA_SHORTCODE_TYPE.toString().toUpperCase()
     const account = await PaymentAccount.create({
         accountNumber,
-        type: type.toUpperCase(),
+        type:accountType,
         branchName: modBranchName,
-        credentialsSecretId: `mpesa/${accountNumber}/${type}`
+        credentialsSecretId: `mpesa/${accountNumber}/${accountType}`
     })
 
-    return `Added ${type} number ${accountNumber} for ${businessId} - ${branchName}`
+    return `Added ${accountType} number ${accountNumber} for ${businessId} - ${branchName}`
 }
 
 export const getAllPaymentAccounts = async () => {
@@ -36,9 +32,6 @@ export const getAllPaymentAccounts = async () => {
 export const getPaymentAccount = async (q) => {
     const query = {}
 
-    if (q.type) {
-        query.type = q.type.toUpperCase()
-    }
     if (q.accountNumber) {
         query.accountNumber = q.accountNumber
     }
