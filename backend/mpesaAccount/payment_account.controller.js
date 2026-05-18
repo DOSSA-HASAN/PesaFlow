@@ -63,8 +63,8 @@ export const blockPaymentAccount = async (req, res, next) => {
         if (!id) {
             throw new AppError("Missing id parameter", 400)
         }
-        const account = paymentService.blockPaymentAccount(id)
-        return successResponse(res, null, typeof account === "string" ? account : "Payment account blocked", 200)
+        const account = await paymentService.blockPaymentAccount(id)
+        return successResponse(res, null, "Payment account blocked", 200)
     } catch (e) {
         next(e)
     }
