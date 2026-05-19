@@ -52,6 +52,11 @@ export const seedApp = async (req, res, next) => {
         const permissionRead = await Permission.create({key: "permission.read"})
         const permissionDelete = await Permission.create({key: "permission.delete"})
 
+        // Create permissions for mpesa payment account operations (PAYBILL / TILL)
+        const paymentAccountCreate = await Permission.create({key: "payment.account.create"})
+        const paymentAccountView = await Permission.create({key: "payment.account.view"})
+        const paymentAccountUpdate = await Permission.create({key: "payment.account.update"})
+
         // TODO: add more permissions for safcom controllers later
 
         // TODO: assign roles with permissions
@@ -59,7 +64,8 @@ export const seedApp = async (req, res, next) => {
         const allPermissions = [
             userCreate, userRead, userUpdate, userDelete,
             roleCreate, roleRead, roleUpdate, roleDelete, roleAssign,
-            permissionCreate, permissionRead, permissionDelete
+            permissionCreate, permissionRead, permissionDelete,
+            paymentAccountCreate, paymentAccountView, paymentAccountUpdate
         ]
         developer.setPermissions(allPermissions)
         admin.setPermissions(allPermissions)
