@@ -1,6 +1,7 @@
 import { Permission } from "../rbac/permission/permission.model.js";
 import User from "../user/user.model.js";
 import { errorResponse } from "../utils/response.js";
+import {AppError} from "../utils/AppError.js";
 
 /**
  *
@@ -12,6 +13,9 @@ export const authorize = (requiredPermission) => {
 
     return async (req, res, next) => {
         const user = req.user
+        if(!user){
+            throw new AppError("Login required", 400)
+        }
         const userRoles = user.role || await user.getRoles({ include: [{ model: Permission }] })
 
         const userPermissions = userRoles.flatMap(role => role.Permissions.map(permission => permission.key))
