@@ -7,7 +7,7 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true
         },
-        accountNumber: {
+        shortCode: {
             type: DataTypes.STRING,
             unique: true,
             allowNull: false
@@ -42,7 +42,7 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
         indexes: [
             {
                 unique: true,
-                fields: ["accountNumber", "branchName"]
+                fields: ["shortCode", "branchName"]
             }
         ],
         tableName: "PaymentAccount"
