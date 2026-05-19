@@ -2,10 +2,10 @@ import PaymentAccount from "./payment_account.model.js";
 import {AppError} from "../utils/AppError.js";
 
 export const addPaymentAccount = async (accountNumber, branchName) => {
-    const modBranchName = branchName.toString().trim().toUpperCase()
-
+    const modBranchName = branchName.trim().toUpperCase().replace(/\s+/g, "")
+    const modAccountNumber = accountNumber.toString().trim().replace(/\s+/g, "")
     const exists = await PaymentAccount.findOne({
-        where: {accountNumber, branchName: modBranchName}
+        where: {shortCode: accountNumber, branchName: modBranchName}
     })
 
     if (exists) {
@@ -15,13 +15,13 @@ export const addPaymentAccount = async (accountNumber, branchName) => {
     const businessId = process.env.BUSINESS_ID
     const accountType = process.env.MPESA_SHORTCODE_TYPE.toString().toUpperCase()
     const account = await PaymentAccount.create({
-        accountNumber,
+        shortCode: modAccountNumber,
         type:accountType,
         branchName: modBranchName,
-        credentialsSecretId: `mpesa/${accountNumber}/${accountType}`
+        credentialsSecretId: `mpesa/${modAccountNumber}/${accountType}`
     })
 
-    return `Added ${accountType} number ${accountNumber} for ${businessId} - ${branchName}`
+    return `Added ${accountType} number ${modAccountNumber} for ${businessId} - ${modBranchName}`
 }
 
 export const getAllPaymentAccounts = async () => {
@@ -32,8 +32,8 @@ export const getAllPaymentAccounts = async () => {
 export const getPaymentAccount = async (q) => {
     const query = {}
 
-    if (q.accountNumber) {
-        query.accountNumber = q.accountNumber.toString().trim()
+    if (q.shortCode) {
+        query.shortCode = q.shortCode.toString().trim()
     }
     if (q.branchName) {
         query.branchName = q.branchName.toUpperCase().trim()
@@ -52,22 +52,22 @@ export const updatePaymentAccount = async (id, data) => {
      * if incoming data has secretCredentialsId we need to update aws secret id since its the id we
      * will use to fetch the secret key and consumer key
      **/
-    const normalisedData = Object.keys(data).map(([key, value]) => {
-        if (typeof value === "string"){
-            return [
-                key,
-                value.trim().toUpperCase()
-            ]
-        }
-        return [key, value]
-    })
+    const normalisedData = Object.entries(data).reduce((acc, [key, value]) => {
+        acc[key] = typeof value === "string" ?
+            value.trim().replace(/\s+/g, "").toUpperCase() :
+            value
+
+        return acc
+    }, {})
+    delete normalisedData.type
+    delete normalisedData.isBlocked
     const [account] = await PaymentAccount.update(
         normalisedData,
         {
             where: {id}
         }
     )
-
+    console.log(account)
     if (account === 0) {
         throw new AppError("Update failed. Ensure payment account exists", 404)
     }
