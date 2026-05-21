@@ -9,7 +9,6 @@ const darajaClient = axios.create({
 darajaClient.interceptors.request.use(async (config) => {
     const accessToken = await fetchAccessToken()
     config.headers.Authorization = `Bearer ${accessToken}`
-
     return config
 })
 
@@ -28,4 +27,4 @@ darajaClient.interceptors.response.use(
     }
 )
 
-
+export default darajaClient
