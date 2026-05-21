@@ -34,3 +34,17 @@ export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", a
     }
 
 }
+
+export const registerValidationAndConfirmationUrl = async (shortCode, confirmationUrl, validationUrl) => {
+    const url = "mpesa/c2b/v2/registerurl"
+    const method = "POST"
+    const data = {
+        "ShortCode": shortCode,
+        "ResponseType": "Completed",
+        "ConfirmationURL": confirmationUrl,
+        "ValidationURL": validationUrl
+    }
+
+    const res = await darajaRequest({method, url, data})
+    return res
+}
