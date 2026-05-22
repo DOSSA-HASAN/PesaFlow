@@ -48,3 +48,37 @@ export const registerValidationAndConfirmationUrl = async (shortCode, confirmati
     const res = await darajaRequest({method, url, data})
     return res
 }
+
+export const initiateStkPush = async (shortCode, amount, transactionType, customerPhone, accountRef = "CustPay", description = "CustSTK") => {
+    const PASSKEY = process.env.PASSKEY
+
+    const timestamp = new Date()
+        .toISOString()
+        .replace(/[-T:.Z]/g, "")
+        .slice(0, 14);
+
+    const password = Buffer.from(
+        shortCode + PASSKEY + timestamp
+    ).toString("base64")
+
+    const isSandbox = process.env.MPESA_ENV === "sandbox"
+
+    const url = "/mpesa/stkpush/v1/processrequest"
+    const method = "POST"
+    const data = {
+        "BusinessShortCode": Number(shortCode),
+        "Password": password,
+        "Timestamp": timestamp,
+        "TransactionType": isSandbox ? "CustomerPayBillOnline" : transactionType,
+        "Amount": Number(amount),
+        "PartyA": customerPhone,
+        "PartyB": Number(shortCode),
+        "PhoneNumber": customerPhone,
+        "CallBackURL": isSandbox ? "https://mydomain.com/path" : "https://custom.domain.com",
+        "AccountReference": accountRef,
+        "TransactionDesc": description
+    }
+
+    const res = await darajaRequest({method, url, data})
+    return res
+}
