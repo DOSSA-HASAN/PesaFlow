@@ -20,7 +20,7 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
             }
         },
         type: {
-            type: DataTypes.ENUM("PAYBILL", "TILL"),
+            type: DataTypes.ENUM("BG", "TILL"),
             allowNull: false,
             set(value) {
                 this.setDataValue("type", value?.toUpperCase())
