@@ -1,5 +1,6 @@
 import * as mpesaService from "./mpesa.service.js"
 import {errorResponse, successResponse} from "../utils/response.js";
+import {NUMBER} from "sequelize";
 
 export const generatePaymentQRCode = async (req, res, next) => {
     try {
@@ -59,6 +60,23 @@ export const initiateStkPush = async (req, res, next) => {
         const transactionType = process.env.MPESA_SHORTCODE_TYPE.toString() === "BG" ? "CustomerBuyGoodsOnline" : "CustomerPayBillOnline"
         const stkPushResponse = await mpesaService.initiateStkPush(shortCode, amount, transactionType, customerPhone, accountRef, description)
         return successResponse(res, stkPushResponse, `Prompt sent to ${customerPhone}`)
+    } catch (e) {
+        next(e)
+    }
+}
+
+export const initiateB2CPayment = async (req, res, next) => {
+    try {
+        const {shortCode} = req.paymentAccount
+        const {commandId, amount, receiver, remarks} = req.body
+        if(!amount || !receiver){
+            return errorResponse(res, "Missing required fields (amount or receiver number)")
+        }
+        if(amount <= 0){
+            return errorResponse(res, "Amount must be more than 0")
+        }
+        const b2cPayment = await mpesaService.initiateB2CPayment(commandId, Number(amount), Number(shortCode), Number(receiver), remarks)
+        return successResponse(res, b2cPayment, "Payment initiated successfully", 200)
     } catch (e) {
         next(e)
     }
