@@ -15,5 +15,6 @@ router.post("/confirmation", paymentAccountResolver, (req, res, next) => {
     console.log("Confirmation url")
 }) // runs after payment processed
 router.post("/stk/initiate", paymentAccountResolver, mpesaController.initiateStkPush)
+router.post("/b2c/initiate", paymentAccountResolver, mpesaController.initiateB2CPayment)
 
 export default router
