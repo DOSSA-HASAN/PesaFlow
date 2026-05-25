@@ -1,5 +1,7 @@
 import PaymentAccount from "./payment_account.model.js";
 import {AppError} from "../utils/AppError.js";
+import redisClient from "../utils/redisClient.js";
+import {sequelize} from "../config/db.js";
 
 export const addPaymentAccount = async (accountNumber, branchName) => {
     const modBranchName = branchName.trim().toUpperCase().replace(/\s+/g, "")
@@ -16,7 +18,7 @@ export const addPaymentAccount = async (accountNumber, branchName) => {
     const accountType = process.env.MPESA_SHORTCODE_TYPE.toString().toUpperCase()
     const account = await PaymentAccount.create({
         shortCode: modAccountNumber,
-        type:accountType,
+        type: accountType,
         branchName: modBranchName,
         credentialsSecretId: `mpesa/${modAccountNumber}/${accountType}`
     })
@@ -61,44 +63,52 @@ export const updatePaymentAccount = async (id, data) => {
     }, {})
     delete normalisedData.type
     delete normalisedData.isBlocked
-    const [account] = await PaymentAccount.update(
-        normalisedData,
-        {
-            where: {id}
+    const transaction = await sequelize.transaction()
+    try {
+        const account = await PaymentAccount.findByPk(id, {transaction})
+        if (!account) {
+            throw new AppError("Payment account not found", 404)
         }
-    )
-    console.log(account)
-    if (account === 0) {
-        throw new AppError("Update failed. Ensure payment account exists", 404)
+        await account.update(normalisedData, {transaction})
+        await transaction.commit()
+        await redisClient.del(`mpesa:payment_account:${account.shortCode}`)
+        return account
+    } catch (e) {
+        await transaction.rollback()
+        throw e
     }
-
-    return account
 }
 
 export const blockPaymentAccount = async (id) => {
-    const [account] = await PaymentAccount.update(
-        {isBlocked: true},
-        {
-            where: {id}
+    const transaction = await sequelize.transaction()
+    try {
+        const account = await PaymentAccount.findByPk(id, {transaction})
+        if (!account) {
+            throw new AppError("Account not found", 404)
         }
-    )
-    if (account === 0) {
-        throw new AppError("Account not found", 404)
+        await account.update({"isBlocked": true}, {transaction})
+        await transaction.commit()
+        await redisClient.del(`mpesa:payment_account:${account.shortCode}`)
+        return "Account blocked successfully"
+    } catch (e) {
+        await transaction.rollback()
+        throw e
     }
-    return "Account blocked successfully"
 }
 
 export const unblockPaymentAccount = async (id) => {
-    const [account] = await PaymentAccount.update(
-        {isBlocked: false},
-        {
-            where: {id}
+    const transaction = await sequelize.transaction()
+    try {
+        const account = await PaymentAccount.findByPk(id, {transaction})
+        if (!account) {
+            throw new AppError("Account not found", 404)
         }
-    )
-
-    if (account === 0) {
-        throw new AppError("Account not found", 404)
+        await account.update({"isBlocked": false}, {transaction})
+        await transaction.commit()
+        await redisClient.del(`mpesa:payment_account:${account.shortCode}`)
+        return "Account unblocked successfully"
+    } catch (e) {
+        await transaction.rollback()
+        throw e
     }
-
-    return account
 }
