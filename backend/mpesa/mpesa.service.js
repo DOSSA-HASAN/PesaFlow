@@ -59,6 +59,38 @@ export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", a
 
 }
 
+/**
+ * Response returned by Safaricom Daraja Register URL API.
+ *
+ * @typedef {Object} DarajaRegisterURLResponse
+ * @property {string} OriginatorConversationID - Unique request tracking ID.
+ * @property {string} ResponseCode - API response code. "0" indicates success.
+ * @property {string} ResponseDescription - API response message.
+ */
+
+/**
+ * Registers C2B validation and confirmation callback URLs for an M-Pesa shortcode.
+ *
+ * The Customer to Business (C2B) Register URL API enables merchants to receive
+ * payment notifications for transactions made to a Paybill or Till number.
+ *
+ * Registered URLs:
+ * - Validation URL: Used to validate transactions before completion.
+ * - Confirmation URL: Receives payment notifications after successful payment.
+ *
+ * Notes:
+ * - In production, this is typically a one-time API call per shortcode.
+ * - In sandbox, URLs can be overwritten multiple times.
+ * - To update production URLs, they must first be deleted from the Daraja
+ *   self-service portal or updated through Safaricom support.
+ * - Transaction validation is optional and must be activated by Safaricom.
+ *
+ * @param {string} shortCode - Business Paybill or Till number.
+ * @param {string} confirmationUrl - URL that receives successful payment notifications.
+ * @param {string} validationUrl - URL used for transaction validation.
+ *
+ * @returns {Promise<DarajaRegisterURLResponse>}
+ */
 export const registerValidationAndConfirmationUrl = async (shortCode, confirmationUrl, validationUrl) => {
     const url = "mpesa/c2b/v2/registerurl"
     const method = "POST"
