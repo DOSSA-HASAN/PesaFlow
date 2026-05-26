@@ -8,14 +8,25 @@ const BASE_URL = process.env.MPESA_BASE_URL
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
 
 /**
- * Generates an M-Pesa QR code.
- * Ensures the shortcode exists in the database before generating QR code
+ * Response returned by Safaricom Daraja QR API.
  *
- * @param {string} shortCode - Business till or paybill number
- * @param {string} [RefNo="Invoice Test"] - Custom payment reference
- * @param {number} amount - Payment amount
- * @param {string|number} [size=300] - QR code image size
- * @returns {Promise<*>}
+ * @typedef {Object} DarajaQRCodeResponse
+ * @property {string} ResponseCode - Daraja response code.
+ * @property {string} RequestID - Request tracking identifier.
+ * @property {string} ResponseDescription - API response description.
+ * @property {string} QRCode - Base64 encoded QR code image.
+ */
+
+/**
+ * Generates an M-Pesa QR code.
+ * Ensures the shortcode exists in the database before generating the QR code.
+ *
+ * @param {string} shortCode - Business till or paybill number.
+ * @param {string} [RefNo="Invoice Test"] - Custom payment reference.
+ * @param {number} amount - Payment amount.
+ * @param {string} [size="300"] - QR code image size.
+ *
+ * @returns {Promise<DarajaQRCodeResponse>}
  */
 export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", amount, size = "300") => {
     if (Number(amount) === 0) {
