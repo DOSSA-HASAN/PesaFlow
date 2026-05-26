@@ -7,6 +7,16 @@ import {sequelize} from "../config/db.js";
 const BASE_URL = process.env.MPESA_BASE_URL
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
 
+/**
+ * Generates an M-Pesa QR code.
+ * Ensures the shortcode exists in the database before generating QR code
+ *
+ * @param {string} shortCode - Business till or paybill number
+ * @param {string} [RefNo="Invoice Test"] - Custom payment reference
+ * @param {number} amount - Payment amount
+ * @param {string|number} [size=300] - QR code image size
+ * @returns {Promise<*>}
+ */
 export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", amount, size = "300") => {
     if (Number(amount) === 0) {
         throw new AppError("Amount cannot be 0", 400)
