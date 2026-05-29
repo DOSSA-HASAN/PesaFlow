@@ -3,6 +3,7 @@ import {AppError} from "../utils/AppError.js";
 import {darajaRequest} from "./shared/darajaRequest.js";
 import {generateSecurityCredential} from "./shared/generateSecurityCredentials.js";
 import {sequelize} from "../config/db.js";
+import {PaymentModel} from "../payment/payment.model.js";
 
 const BASE_URL = process.env.MPESA_BASE_URL
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
@@ -99,38 +100,6 @@ export const registerValidationAndConfirmationUrl = async (shortCode, confirmati
         "ResponseType": "Completed",
         "ConfirmationURL": confirmationUrl,
         "ValidationURL": validationUrl
-    }
-
-    const res = await darajaRequest({method, url, data})
-    return res
-}
-
-export const initiateStkPush = async (shortCode, amount, transactionType, customerPhone, accountRef = "CustPay", description = "CustSTK") => {
-    const PASSKEY = process.env.PASSKEY
-
-    const timestamp = new Date()
-        .toISOString()
-        .replace(/[-T:.Z]/g, "")
-        .slice(0, 14);
-
-    const password = Buffer.from(
-        shortCode + PASSKEY + timestamp
-    ).toString("base64")
-
-    const url = "/mpesa/stkpush/v1/processrequest"
-    const method = "POST"
-    const data = {
-        "BusinessShortCode": Number(shortCode),
-        "Password": password,
-        "Timestamp": timestamp,
-        "TransactionType": IS_SANDBOX ? "CustomerPayBillOnline" : transactionType,
-        "Amount": Number(amount),
-        "PartyA": customerPhone,
-        "PartyB": Number(shortCode),
-        "PhoneNumber": customerPhone,
-        "CallBackURL": IS_SANDBOX ? "https://mydomain.com/path" : "https://custom.domain.com",
-        "AccountReference": accountRef,
-        "TransactionDesc": description
     }
 
     const res = await darajaRequest({method, url, data})
