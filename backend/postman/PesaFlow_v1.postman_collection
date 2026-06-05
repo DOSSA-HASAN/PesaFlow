@@ -17,7 +17,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"email\":\"developer@gmail.com\",\r\n    \"password\": \"12345\"\r\n}",
+              "raw": "{\r\n    \"email\":\"notyetdoc911@gmail.com\",\r\n    \"password\": \"12345\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -519,6 +519,328 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "mpesa",
+      "item": [
+        {
+          "name": "Generate daraja auth token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/mpesa/token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mpesa",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate QR Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "var qrBase64 = jsonData.data.QRCode;",
+                  "",
+                  "var template = `",
+                  "  <html>",
+                  "    <body style=\"display:flex; flex-direction:column; align-items:center; font-family:sans-serif; padding:20px;\">",
+                  "      <h2>Generated QR Code</h2>",
+                  "      <img src=\"data:image/png;base64,${qrBase64}\" style=\"width:300px; height:300px; border:1px solid #ccc; padding:10px;\" />",
+                  "      <p style=\"margin-top:10px; color:#555;\">{{message}}</p>",
+                  "    </body>",
+                  "  </html>",
+                  "`;",
+                  "",
+                  "pm.visualizer.set(template, {",
+                  "  message: jsonData.message",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"shortCode\": \"174379\",\r\n    \"RefNo\": \"Invoice Test - 001\",\r\n    \"amount\": 10\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/mpesa/qr/generate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mpesa",
+                "qr",
+                "generate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register Validation & Confirmation URLs",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"shortCode\": \"600998\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/mpesa/c2b/register-urls",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mpesa",
+                "c2b",
+                "register-urls"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Initiate B2C payment",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"shortCode\": \"600979\",\r\n    \"receiver\": \"254708374149\",\r\n    \"amount\": \"12\",\r\n    \"commandId\": \"BusinessPayment\",\r\n    \"idempotencyKey\": \"002\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/mpesa/b2c/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mpesa",
+                "b2c",
+                "initiate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Initiate STK Prompt",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"shortCode\": \"174379\",\r\n    \"amount\": 10,\r\n    \"customerPhone\": \"254792669697\",\r\n    \"idempotencyKey\": \"001\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/mpesa/stk/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "mpesa",
+                "stk",
+                "initiate"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "payment account",
+      "item": [
+        {
+          "name": "Add payment account",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountNumber\": \"600979\",\r\n    \"branch\": \"westlands - 2\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/payment_account/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get payment account",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountNumber\": \"111111\",\r\n    \"type\": \"PAYBILL\",\r\n    \"branch\": \"WESTLANDS\"\r\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payment_account",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get payment account Copy",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/payment_account?type=till&branchName=westlands",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "till"
+                },
+                {
+                  "key": "branchName",
+                  "value": "westlands"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update payment account",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"shortCode\": \"174379\",\r\n    \"branchName\": \"westlands\",\r\n    \"type\": \"BGK\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/payment_account/f3b4aeab-ec08-4983-bd3f-80ad71d4543b",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account",
+                "f3b4aeab-ec08-4983-bd3f-80ad71d4543b"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Block payment account",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payment_account/eac42297-2926-4d56-878b-c8196a4e86a0/block",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account",
+                "eac42297-2926-4d56-878b-c8196a4e86a0",
+                "block"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblock payment account",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payment_account/eac42297-2926-4d56-878b-c8196a4e86a0/unblock",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "payment_account",
+                "eac42297-2926-4d56-878b-c8196a4e86a0",
+                "unblock"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "auth": {
@@ -526,7 +848,7 @@
     "bearer": [
       {
         "key": "token",
-        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJjYWUwY2Q2LTQzYmQtNGZhOS05YTEwLTYwZmMwODMzMjZjNSIsImVtYWlsIjoibm90eWV0ZG9jOTExQGdtYWlsLmNvbSIsInJvbGUiOlsiY2FzaGllciIsImRldmVsb3BlciJdLCJpYXQiOjE3Nzc0NDQ1OTUsImV4cCI6MTc3NzQ0ODE5NX0.QQY2R5njdNBo3HMV--kjXkzFdtGOu2qfd1zZ1zO3z4E",
+        "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImEwNDk5ZTcwLTI3MzgtNDIzNC04NDkxLTEzODVkMDdiNTE3ZiIsImVtYWlsIjoibm90eWV0ZG9jOTExQGdtYWlsLmNvbSIsInJvbGUiOlsiZGV2ZWxvcGVyIl0sImlhdCI6MTc4MDY0MjU4NCwiZXhwIjoxNzgwNjQ2MTg0fQ.m0AEfnzgUpvfHNa6ijSxeZn6wyVQksdeRN-QxddQlJU",
         "type": "string"
       }
     ]
