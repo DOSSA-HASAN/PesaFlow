@@ -4,6 +4,7 @@ import * as mpesaController from "./mpesa.controller.js"
 import {paymentAccountResolver} from "../middlewares/paymentAccountResolver.js";
 import {initiateStkPush} from "./stk/stk.controller.js";
 import {verifyUser} from "../middlewares/auth.middleware.js";
+import {initiateB2CPayment} from "./b2c/b2c.controller.js";
 
 const router = express.Router()
 router.use(verifyUser)
@@ -17,6 +18,6 @@ router.post("/confirmation", paymentAccountResolver, (req, res, next) => {
     console.log("Confirmation url")
 }) // runs after payment processed
 router.post("/stk/initiate", paymentAccountResolver, initiateStkPush)
-router.post("/b2c/initiate", paymentAccountResolver, mpesaController.initiateB2CPayment)
+router.post("/b2c/initiate", paymentAccountResolver, initiateB2CPayment)
 
 export default router
