@@ -105,37 +105,3 @@ export const registerValidationAndConfirmationUrl = async (shortCode, confirmati
     const res = await darajaRequest({method, url, data})
     return res
 }
-
-export const initiateB2CPayment = async (commandId, amount, shortCode, receiver, remarks = "remarked", confirmationUrl, timeoutUrl) => {
-    const transaction = await sequelize.transaction()
-    try{
-        const method = "POST"
-        const url = "/mpesa/b2c/v3/paymentrequest"
-        // const securityCredentials = await generateSecurityCredential()
-        const availableCommandIDs = ["SalaryPayment", "BusinessPayment", "PromotionPayment"]
-        if(availableCommandIDs.includes(commandId)){
-            console.log(availableCommandIDs[commandId])
-        }
-        const data = {
-            "OriginatorConversationID": "85875344f22247dbbebaf505f821387e", // TODO: dynamic
-            "InitiatorName": process.env.INITIATOR_NAME,
-            "SecurityCredential": "UCyA878pZBwOrYE4idghFh9uhEjy4KqbyvTDI+4MCeg0O3ssv2yzgUlO5iLVETvGOP6YytdGUJui6NwDT7wrtf+3yEvQ6jYdiGNr2b3MPwARf0iHLZiz+B7trstfFmNJBvCwjAtoxcdWkrVsTxHX+RbZeoFjEpq2K2Bxe4+6s/Bp1uIEE1aQq4ltMT+hNmVyyJXowSJrHWfdyXqx5iqNGuY/gPSXv8Wf2yPLdqRrPnSM445tqjlLpnzkrRX6ohB5YCfxIDvWxCOXFt8RWE+2ek/TwHc3+PXKNqEQMuH7W3KpqmjfMzjjhlCNRSPti2VIA1RUaw+KpL8eG9hWc4DqZw==", // TODO: get from mpesa portal
-            "CommandID": commandId,
-            "Amount": amount,
-            "PartyA": shortCode,
-            "PartyB": receiver,
-            "Remarks": remarks,
-            "QueueTimeOutURL": IS_SANDBOX ?  "https://mydomain.com/b2c/queue/" : timeoutUrl,
-            "ResultURL": IS_SANDBOX ?  "https://mydomain.com/b2c/result/" : confirmationUrl,
-        }
-
-        const res = await darajaRequest({method, url, data})
-        // create payment
-
-        await transaction.commit()
-        return res
-    } catch (e) {
-        await transaction.rollback()
-        throw e
-    }
-}
