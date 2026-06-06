@@ -45,7 +45,7 @@ const PaymentAccount = sequelize.define("PaymentAccount", {
                 fields: ["shortCode", "branchName"]
             }
         ],
-        tableName: "PaymentAccount"
+        tableName: "payment_account"
     }
 )
 
