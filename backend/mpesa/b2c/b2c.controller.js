@@ -12,6 +12,7 @@ export const initiateB2CPayment = async (req, res, next) => {
         if (amount <= 0) {
             return errorResponse(res, "Amount must be more than 0")
         }
+        console.log(`USER ID: ${id}`)
         const b2cPayment = await b2cService.initiateB2CPayment({
             idempotencyKey,
             commandId,
@@ -19,7 +20,7 @@ export const initiateB2CPayment = async (req, res, next) => {
             shortCode: String(shortCode),
             receiver: String(receiver),
             remarks,
-            userId: id
+            initiatedBy: id
         })
         return successResponse(res, b2cPayment, "Payment initiated successfully", 200)
     } catch (e) {

@@ -1,6 +1,6 @@
 import {sequelize} from "../../config/db.js";
 import {darajaRequest} from "../shared/darajaRequest.js";
-import {PaymentModel} from "../../payment/payment.model.js";
+import {Payment} from "../../payment/payment.model.js";
 import {b2cHandlers} from "./b2c.handlers.js";
 import {AppError} from "../../utils/AppError.js";
 import {randomUUID} from "crypto"
@@ -18,7 +18,7 @@ export const initiateB2CPayment = async ({
                                              remarks = "remarked",
                                              confirmationUrl,
                                              timeoutUrl,
-                                             userId
+                                             initiatedBy
                                          }) => {
     let payment;
     const transaction = await sequelize.transaction()
@@ -47,7 +47,7 @@ export const initiateB2CPayment = async ({
         }
 
         try {
-            payment = await PaymentModel.create({
+            payment = await Payment.create({
                 reference: reference,
                 type: "B2C",
                 idempotencyKey: idempotencyKey,
@@ -59,11 +59,11 @@ export const initiateB2CPayment = async ({
                 remarks: remarks,
                 originatorConversationId: OriginatorConversationID,
                 requestPayload: data,
-                userId: userId
+                initiatedBy: initiatedBy
             }, {transaction})
         } catch (e) {
             if (e.name === "SequelizeUniqueConstraintError") {
-                const existingPayment = await PaymentModel.findOne({
+                const existingPayment = await Payment.findOne({
                     where: {idempotencyKey: idempotencyKey}
                 })
                 if (existingPayment) {
