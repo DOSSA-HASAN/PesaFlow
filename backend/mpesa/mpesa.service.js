@@ -1,9 +1,6 @@
 import "dotenv/config.js"
 import {AppError} from "../utils/AppError.js";
 import {darajaRequest} from "./shared/darajaRequest.js";
-import {generateSecurityCredential} from "./shared/generateSecurityCredentials.js";
-import {sequelize} from "../config/db.js";
-import {PaymentModel} from "../payment/payment.model.js";
 
 const BASE_URL = process.env.MPESA_BASE_URL
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
