@@ -1,5 +1,5 @@
 import {sequelize} from "../../config/db.js";
-import {PaymentModel} from "../../payment/payment.model.js";
+import {Payment} from "../../payment/payment.model.js";
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
 import {AppError} from "../../utils/AppError.js";
@@ -70,7 +70,7 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
     console.log(userId)
     try {
         try {
-            payment = await PaymentModel.create({
+            payment = await Payment.create({
                 reference: accountRef,
                 type: "STK",
                 idempotencyKey: idempotencyKey,
@@ -80,12 +80,12 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
                 partyA: customerPhone,
                 partyB: shortCode,
                 description: description,
-                userId: userId,
+                initiatedBy: userId,
             }, {transaction})
         } catch (e) {
             console.log(e.name)
             if (e.name === "SequelizeUniqueConstraintError") {
-                const existingPayment = await PaymentModel.findOne({
+                const existingPayment = await Payment.findOne({
                     where: {idempotencyKey: idempotencyKey}
                 })
 
