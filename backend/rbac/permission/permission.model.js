@@ -12,4 +12,4 @@ export const Permission = sequelize.define("Permission", {
         unique: true,
         allowNull: false
     }
-})
+}, {tableName: "permissions"})
