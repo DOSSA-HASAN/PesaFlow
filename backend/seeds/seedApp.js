@@ -7,23 +7,37 @@ import "dotenv/config.js"
 import {Role} from "../rbac/role/role.model.js";
 import {Permission} from "../rbac/permission/permission.model.js";
 import {sequelize} from "../config/db.js";
+import PaymentAccount from "../mpesaAccount/payment_account.model.js";
 
 export const seedApp = async (req, res, next) => {
     try {
 
         await sequelize.sync({force: true})
 
-        const email = "notyetdoc911@gmail.com"
-        const password = await bcrypt.hash("12345", 10) // Less secure password for testing
-        const role = "developer"
+        // Define password for seed users
+        const password = await bcrypt.hash("12345", 10)
 
-        const seedUser = await User.create({
-            email,
-            password,
-            permissions: role
+        const seedDeveloperUser = await User.create({
+            email: "dev@gmail.com",
+            password: password,
         })
 
-        await publishEvent("SEND_EMAIL", {type: "WELCOME MAIL", email: seedUser.email})
+        const seedAccountantUser = await User.create({
+            email: "account@gmail.com",
+            password: password,
+        })
+
+        const seedCashierUser = await User.create({
+            email: "cashier@gmail.com",
+            password: password,
+        })
+
+        const seedAdminUser = await User.create({
+            email: "admin@gmail.com",
+            password: password,
+        })
+
+        // await publishEvent("SEND_EMAIL", {type: "WELCOME MAIL", email: seedUser.email})
 
         // Create roles
         const cashier = await Role.create({name: "cashier"})
@@ -32,7 +46,10 @@ export const seedApp = async (req, res, next) => {
         const developer = await Role.create({name: "developer"})
 
         // Assign seedUser with role 'developer'
-        seedUser.setRoles([developer])
+        seedDeveloperUser.setRoles([developer])
+        seedAccountantUser.setRoles([accountant])
+        seedCashierUser.setRoles([cashier])
+        seedAdminUser.setRoles([admin])
 
         // Create user permissions
         const userCreate = await Permission.create({key: "user.create"})
@@ -57,18 +74,59 @@ export const seedApp = async (req, res, next) => {
         const paymentAccountView = await Permission.create({key: "payment.account.view"})
         const paymentAccountUpdate = await Permission.create({key: "payment.account.update"})
 
-        // TODO: add more permissions for safcom controllers later
+        // Add permissions for mpesa payments
+        const mpesaGenerateQrCode = await Permission.create({key: "mpesa.qrcode.generate"})
+        const mpesaInitiateStkPush = await Permission.create({key: "mpesa.stk.initiate"})
+        const mpesaInitiateb2c = await Permission.create({key: "mpesa.b2c.initiate"})
+        const mpesaInitiateb2b = await Permission.create({key: "mpesa.b2b.initiate"})
 
-        // TODO: assign roles with permissions
-        // assign permission to roles
-        const allPermissions = [
+        // Add payment permissions
+        const paymentView = await Permission.create({key: "transaction.view"})
+
+        // assign all permissions to admin
+        const adminPermissions = [
             userCreate, userRead, userUpdate, userDelete,
             roleCreate, roleRead, roleUpdate, roleDelete, roleAssign,
             permissionCreate, permissionRead, permissionDelete,
-            paymentAccountCreate, paymentAccountView, paymentAccountUpdate
+            paymentAccountCreate, paymentAccountView, paymentAccountUpdate,
+            mpesaGenerateQrCode, mpesaInitiateStkPush, mpesaInitiateb2c, mpesaInitiateb2b,
+            paymentView
         ]
-        developer.setPermissions(allPermissions)
-        admin.setPermissions(allPermissions)
+
+        const developerPermissions = [
+            userCreate, userRead, userUpdate, userDelete,
+            roleCreate, roleRead, roleUpdate, roleDelete, roleAssign,
+            permissionCreate, permissionRead, permissionDelete,
+            paymentAccountCreate, paymentAccountView, paymentAccountUpdate,
+            paymentView
+        ]
+
+        const accountantPermissions = [
+            mpesaGenerateQrCode, mpesaInitiateStkPush, mpesaInitiateb2c, mpesaInitiateb2b,
+            paymentView
+        ]
+
+        const cashierPermissions = [
+            mpesaGenerateQrCode, mpesaInitiateStkPush,
+            paymentView
+        ]
+
+        developer.setPermissions(developerPermissions)
+        admin.setPermissions(adminPermissions)
+        accountant.setPermissions(accountantPermissions)
+        cashier.setPermissions(cashierPermissions)
+
+        // Add shortcodes
+        await PaymentAccount.create({
+            accountNumber: "174379",
+            branch: "westlands - 1"
+        })
+
+        await PaymentAccount.create({
+            accountNumber: "600979",
+            branch: "westlands - 2"
+        })
+
 
     } catch (e) {
         console.error(e.message)
