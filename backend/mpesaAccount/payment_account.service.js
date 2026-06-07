@@ -1,4 +1,4 @@
-import PaymentAccount from "./payment_account.model.js";
+import {PaymentAccount} from "../models/index.js"
 import {AppError} from "../utils/AppError.js";
 import redisClient from "../utils/redisClient.js";
 import {sequelize} from "../config/db.js";

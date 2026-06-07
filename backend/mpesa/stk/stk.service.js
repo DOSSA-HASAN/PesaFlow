@@ -1,8 +1,7 @@
 import {sequelize} from "../../config/db.js";
-import {Payment} from "../../payment/payment.model.js";
+import {Payment} from "../../models/index.js"
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
-import {AppError} from "../../utils/AppError.js";
 
 
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"

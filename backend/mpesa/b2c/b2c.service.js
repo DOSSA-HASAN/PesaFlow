@@ -1,6 +1,6 @@
 import {sequelize} from "../../config/db.js";
 import {darajaRequest} from "../shared/darajaRequest.js";
-import {Payment} from "../../payment/payment.model.js";
+import {Payment} from "../../models/index.js"
 import {b2cHandlers} from "./b2c.handlers.js";
 import {AppError} from "../../utils/AppError.js";
 import {randomUUID} from "crypto"
