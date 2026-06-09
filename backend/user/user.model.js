@@ -1,7 +1,5 @@
-import mongoose from "mongoose";
 import { sequelize } from "../config/db.js";
 import { DataTypes } from "sequelize";
-import { AppError } from "../utils/AppError.js";
 
 /**
  * @file user.model.js
@@ -66,15 +64,7 @@ const User = sequelize.define("User", {
             unique: true,
             fields: ["email"]
         },
-    ],
-
-    // validate: {
-    //     cashierMustHaveTill(){
-    //         if(this.role === "cashier"){
-    //             throw AppError("This permission must have a till id")
-    //         }
-    //     }
-    // }
+    ]
 })
 
 export default User
