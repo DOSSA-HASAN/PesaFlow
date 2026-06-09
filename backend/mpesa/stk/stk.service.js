@@ -2,6 +2,7 @@ import {sequelize} from "../../config/db.js";
 import {Payment} from "../../models/index.js"
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
+import {generateMpesaPassword} from "../../utils/generateMpesaPassword.js";
 
 
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
@@ -95,21 +96,16 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             }
             throw e
         }
-
-        const PASSKEY = process.env.PASSKEY
-
         const timestamp = new Date()
             .toISOString()
             .replace(/[-T:.Z]/g, "")
             .slice(0, 14);
 
-        const password = Buffer.from(shortCode + PASSKEY + timestamp).toString("base64")
-
         const url = "/mpesa/stkpush/v1/processrequest"
         const method = "POST"
         const data = {
             "BusinessShortCode": shortCode,
-            "Password": password,
+            "Password": generateMpesaPassword(shortCode),
             "Timestamp": timestamp,
             "TransactionType": IS_SANDBOX ? "CustomerPayBillOnline" : transactionType,
             "Amount": Number(amount),
