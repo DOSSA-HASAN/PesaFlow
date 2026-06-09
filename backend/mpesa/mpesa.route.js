@@ -5,6 +5,9 @@ import {paymentAccountResolver} from "../middlewares/paymentAccountResolver.js";
 import {initiateStkPush} from "./stk/stk.controller.js";
 import {verifyUser} from "../middlewares/auth.middleware.js";
 import {initiateB2CPayment} from "./b2c/b2c.controller.js";
+import {getMpesaBalance} from "./balance/balance.controller.js";
+import {getTransactionStatus} from "./transactionStatus/transactionStatus.controller.js";
+import {queryStkTransactionStatus} from "./stk/query/query.controller.js";
 
 const router = express.Router()
 
@@ -30,10 +33,19 @@ router.post("/confirmation", paymentAccountResolver, (req, res, next) => {
     console.log("Confirmation url")
 })
 
-// Route to prompt customers
+// Route to prompt customers (needs callback)
 router.post("/stk/initiate", paymentAccountResolver, initiateStkPush)
 
-// Route to carry out a business-to-customer payment
+// Route to carry out a business-to-customer payment (needs callback)
 router.post("/b2c/initiate", paymentAccountResolver, initiateB2CPayment)
+
+// Route to get mpesa wallet balance (needs callback)
+router.post("/balance", paymentAccountResolver, getMpesaBalance)
+
+// Route to get mpesa transaction status
+// this route is only to fetch info of transactions if they are successful u need the mpesa transaction ID
+router.post("/status", paymentAccountResolver, getTransactionStatus)
+
+router.post("/status/stk", paymentAccountResolver, queryStkTransactionStatus)
 
 export default router
