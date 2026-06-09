@@ -4,10 +4,10 @@ import User from "../user/user.model.js"
 import {successResponse} from "../utils/response.js"
 import bcrypt from "bcryptjs"
 import "dotenv/config.js"
-import {Role} from "../rbac/role/role.model.js";
-import {Permission} from "../rbac/permission/permission.model.js";
+import {Role} from "../models/index.js";
+import {Permission} from "../models/index.js";
 import {sequelize} from "../config/db.js";
-import PaymentAccount from "../mpesaAccount/payment_account.model.js";
+import {PaymentAccount} from "../models/index.js";
 
 export const seedApp = async (req, res, next) => {
     try {
