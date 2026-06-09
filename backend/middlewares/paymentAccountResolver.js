@@ -1,5 +1,5 @@
 import redisClient from "../utils/redisClient.js";
-import PaymentAccount from "../mpesaAccount/payment_account.model.js";
+import {PaymentAccount} from "../models/index.js";
 import {errorResponse} from "../utils/response.js";
 
 export const paymentAccountResolver = async (req, res, next) => {
