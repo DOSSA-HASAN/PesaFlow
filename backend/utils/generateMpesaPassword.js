@@ -1,3 +1,5 @@
+import {AppError} from "./AppError.js";
+
 export const generateMpesaPassword = (shortCode) => {
     if(!shortCode){
         throw new AppError("Short code required to generate password")
