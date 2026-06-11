@@ -44,7 +44,7 @@ router.post("/balance", paymentAccountResolver, getMpesaBalance)
 
 // Route to get mpesa transaction status
 // this route is only to fetch info of transactions if they are successful u need the mpesa transaction ID
-router.post("/status", paymentAccountResolver, getTransactionStatus)
+// router.post("/status", paymentAccountResolver, getTransactionStatus) //TODO: CHECK WITH SAFARICOM, DOESNT WORK
 
 router.post("/status/stk", paymentAccountResolver, queryStkTransactionStatus)
 
