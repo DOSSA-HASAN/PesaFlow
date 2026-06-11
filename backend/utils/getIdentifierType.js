@@ -8,10 +8,8 @@ const IDENTIFIER_TYPES = {
 }
 export const getIdentifierType = (shortcodeType = process.env.MPESA_SHORTCODE_TYPE) => {
     const identifierType = IDENTIFIER_TYPES[shortcodeType]
-    console.log(identifierType)
     if(!identifierType){
         throw new AppError(`Invalid short code identifier type: ${shortcodeType}`)
     }
-
     return identifierType
 }
