@@ -3,6 +3,7 @@ import {Payment} from "../../models/index.js"
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
 import {generateMpesaPassword} from "../../utils/generateMpesaPassword.js";
+import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
 
 
 const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
@@ -60,14 +61,6 @@ const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
 export const initiateStkPush = async (shortCode, amount, transactionType, customerPhone, accountRef = "CustPay", description = "CustSTK", idempotencyKey, userId) => {
     let payment;
     const transaction = await sequelize.transaction()
-    console.log(shortCode)
-    console.log(amount)
-    console.log(transactionType)
-    console.log(customerPhone)
-    console.log(accountRef)
-    console.log(description)
-    console.log(idempotencyKey)
-    console.log(userId)
     try {
         try {
             payment = await Payment.create({
@@ -83,7 +76,6 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
                 initiatedBy: userId,
             }, {transaction})
         } catch (e) {
-            console.log(e.name)
             if (e.name === "SequelizeUniqueConstraintError") {
                 const existingPayment = await Payment.findOne({
                     where: {idempotencyKey: idempotencyKey}
@@ -107,14 +99,14 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             "BusinessShortCode": shortCode,
             "Password": generateMpesaPassword(shortCode),
             "Timestamp": timestamp,
-            "TransactionType": IS_SANDBOX ? "CustomerPayBillOnline" : transactionType,
+            "TransactionType": getMpesaEnvironmentSpecificValue("CustomerPayBillOnline", transactionType),
             "Amount": Number(amount),
             "PartyA": customerPhone,
             "PartyB": Number(shortCode),
             "PhoneNumber": customerPhone,
-            "CallBackURL": IS_SANDBOX ? "https://mydomain.com/path" : "https://custom.domain.com",
+            "CallBackURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", "https://custom.domain.com"),
             "AccountReference": accountRef,
-            "TransactionDesc": description
+            "TransactionDesc": description,
         }
 
         const res = await darajaRequest({method, url, data})
@@ -127,6 +119,7 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
 
         await payment.update({
             status: "SUBMITTED",
+            mpesaTimestamp: timestamp,
             checkoutRequestId: res.CheckoutRequestID,
             merchantRequestId: res.MerchantRequestID,
             resultCode: res.ResponseCode,
@@ -137,6 +130,7 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
         return res
     } catch (e) {
         await transaction.rollback()
+        console.log(e)
         throw e
     }
 }

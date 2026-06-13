@@ -6,7 +6,7 @@ import {generateTimestamp} from "../../../utils/generateTimestamp.js";
 
 export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) => {
     const method = "POST"
-    const url = "mpesa/stkpushquery/v1/query"
+    const url = "/mpesa/stkpushquery/v1/query"
     const data = {
         "BusinessShortCode": shortCode,
         "Password": generateMpesaPassword(shortCode),
