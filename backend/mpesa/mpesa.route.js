@@ -8,6 +8,7 @@ import {initiateB2CPayment} from "./b2c/b2c.controller.js";
 import {getMpesaBalance} from "./balance/balance.controller.js";
 import {getTransactionStatus} from "./transactionStatus/transactionStatus.controller.js";
 import {queryStkTransactionStatus} from "./stk/query/query.controller.js";
+import {b2paybill} from "./b2paybill/b2paybill.controller.js";
 
 const router = express.Router()
 
@@ -38,6 +39,9 @@ router.post("/stk/initiate", paymentAccountResolver, initiateStkPush)
 
 // Route to carry out a business-to-customer payment (needs callback)
 router.post("/b2c/initiate", paymentAccountResolver, initiateB2CPayment)
+
+// Route to carry out business-to-paybill payment (needs callback)
+router.post("/b2paybill/initiate", paymentAccountResolver, b2paybill)
 
 // Route to get mpesa wallet balance (needs callback)
 router.post("/balance", paymentAccountResolver, getMpesaBalance)
