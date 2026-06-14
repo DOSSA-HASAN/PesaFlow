@@ -117,15 +117,20 @@ export const seedApp = async (req, res, next) => {
         cashier.setPermissions(cashierPermissions)
 
         // Add shortcodes
-        await PaymentAccount.create({
-            accountNumber: "174379",
-            branch: "westlands - 1"
-        })
-
-        await PaymentAccount.create({
-            accountNumber: "600979",
-            branch: "westlands - 2"
-        })
+        // await PaymentAccount.create({
+        //     shortCode: "174379",
+        //     branchName: "westlands - 1"
+        // })
+        //
+        // await PaymentAccount.create({
+        //     shortCode: "600979",
+        //     branchName: "westlands - 2"
+        // })
+        //
+        // await PaymentAccount.create({
+        //     shortCode: "600988",
+        //     branchName: "westlands - 3"
+        // })
 
 
     } catch (e) {
