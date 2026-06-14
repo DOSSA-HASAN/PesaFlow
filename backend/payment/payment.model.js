@@ -11,10 +11,10 @@ export const Payment = sequelize.define("Payment", {
     reference: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+        unique: false
     },
     type: {
-        type: DataTypes.ENUM("C2B", "B2B", "B2C", "STK", "REVERSAL"),
+        type: DataTypes.ENUM("C2B", "B2PAYBILL", "B2TILL", "B2POCHI", "B2C", "STK", "REVERSAL"),
         allowNull: false
     },
     idempotencyKey: {
@@ -29,6 +29,10 @@ export const Payment = sequelize.define("Payment", {
     amount: {
         type: DataTypes.DECIMAL(12, 2),
         allowNull: false
+    },
+    mpesaTimestamp: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     currency: {
         type: DataTypes.ENUM("KES"),
