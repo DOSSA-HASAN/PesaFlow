@@ -9,15 +9,28 @@ const FINAL_STATES = new Set([
     "SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"
 ])
 
+const mapStatus = (code) => {
+    switch (String(code)) {
+        case "0":
+            return "SUCCESS"
+        case "1032":
+            return "CANCELLED"
+        case "1037":
+            return "TIMEOUT"
+        default:
+            return "FAILED"
+    }
+}
+
 export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) => {
     try {
 
         const payment = await Payment.findOne({where: {"checkoutRequestId": checkoutRequestId}})
-        if(!payment){
-            throw AppError(`STK transaction with checkout request Id : ${checkoutRequestId} not found`)
+        if (!payment) {
+            throw new AppError(`STK transaction with checkout request Id : ${checkoutRequestId} not found`, 404)
         }
 
-        if(FINAL_STATES.has(payment.status)){
+        if (FINAL_STATES.has(payment.status)) {
             return payment
         }
 
@@ -34,13 +47,11 @@ export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) =>
             throw new AppError(res?.ResponseDescription ? res?.ResponseDescription : '`Failed to get STK transaction status', 400)
         }
 
-        if (res) {
-            await payment.update({
-                "resultDescription": res.ResultDesc, "status": res.ResultCode === "0" ? "SUCCESS" : "CANCELLED"
-            })
+        await payment.update({
+            "resultDescription": res.ResultDesc, "status": mapStatus(res.ResultCode)
+        })
 
-            return payment
-        }
+        return payment
 
     } catch (e) {
         throw new AppError(e.message || "STK query failed", 500)
