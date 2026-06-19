@@ -1,12 +1,9 @@
-import {sequelize} from "../../config/db.js";
 import {Payment} from "../../models/index.js"
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
 import {generateMpesaPassword} from "../../utils/generateMpesaPassword.js";
 import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
 
-
-const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
 
 /**
  * Response returned by Safaricom Daraja STK Push API.
@@ -60,77 +57,87 @@ const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
  */
 export const initiateStkPush = async (shortCode, amount, transactionType, customerPhone, accountRef = "CustPay", description = "CustSTK", idempotencyKey, userId) => {
     let payment;
-    const transaction = await sequelize.transaction()
+    const timestamp = new Date()
+        .toISOString()
+        .replace(/[-T:.Z]/g, "")
+        .slice(0, 14);
+
+    const url = "/mpesa/stkpush/v1/processrequest"
+    const method = "POST"
+    const data = {
+        "BusinessShortCode": shortCode,
+        "Password": generateMpesaPassword(shortCode),
+        "Timestamp": timestamp,
+        "TransactionType": getMpesaEnvironmentSpecificValue("CustomerPayBillOnline", transactionType),
+        "Amount": Number(amount),
+        "PartyA": customerPhone,
+        "PartyB": Number(shortCode),
+        "PhoneNumber": customerPhone,
+        "CallBackURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", "https://custom.domain.com"),
+        "AccountReference": accountRef,
+        "TransactionDesc": description,
+    }
+
+    const persistedPayload = {
+        ...data, "Password": "[REDACTED]"
+    }
+
     try {
-        try {
-            payment = await Payment.create({
-                reference: accountRef,
-                type: "STK",
-                idempotencyKey: idempotencyKey,
-                status: "PENDING",
-                amount: Number(amount),
-                phoneNumber: customerPhone,
-                partyA: customerPhone,
-                partyB: shortCode,
-                description: description,
-                initiatedBy: userId,
-            }, {transaction})
-        } catch (e) {
-            if (e.name === "SequelizeUniqueConstraintError") {
-                const existingPayment = await Payment.findOne({
-                    where: {idempotencyKey: idempotencyKey}
-                })
+        payment = await Payment.create({
+            reference: accountRef,
+            type: "STK",
+            idempotencyKey: idempotencyKey,
+            status: "PENDING",
+            amount: Number(amount),
+            phoneNumber: customerPhone,
+            partyA: customerPhone,
+            partyB: shortCode,
+            description: description,
+            initiatedBy: userId,
+            requestPayload: {request: persistedPayload},
+            mpesaTimestamp: timestamp,
+        })
+    } catch (e) {
+        if (e.name === "SequelizeUniqueConstraintError") {
+            const existingPayment = await Payment.findOne({
+                where: {idempotencyKey: idempotencyKey}
+            })
 
-                if (existingPayment) {
-                    const handler = stkHandlers?.[existingPayment.status] ?? stkHandlers.FAILED
-                    return handler(existingPayment)
-                }
+            if (existingPayment) {
+                const handler = stkHandlers?.[existingPayment.status] ?? stkHandlers.FAILED
+                return handler(existingPayment)
             }
-            throw e
         }
-        const timestamp = new Date()
-            .toISOString()
-            .replace(/[-T:.Z]/g, "")
-            .slice(0, 14);
-
-        const url = "/mpesa/stkpush/v1/processrequest"
-        const method = "POST"
-        const data = {
-            "BusinessShortCode": shortCode,
-            "Password": generateMpesaPassword(shortCode),
-            "Timestamp": timestamp,
-            "TransactionType": getMpesaEnvironmentSpecificValue("CustomerPayBillOnline", transactionType),
-            "Amount": Number(amount),
-            "PartyA": customerPhone,
-            "PartyB": Number(shortCode),
-            "PhoneNumber": customerPhone,
-            "CallBackURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", "https://custom.domain.com"),
-            "AccountReference": accountRef,
-            "TransactionDesc": description,
-        }
-
+        throw e
+    }
+    try {
         const res = await darajaRequest({method, url, data})
         const success = res?.ResponseCode === "0"
 
+
         if (!success) {
-            await transaction.rollback()
-            return res
+            await payment.update({
+                status: "FAILED",
+                resultCode: res.ResponseCode,
+                resultDescription: res.ResponseDescription,
+                requestPayload: {request: persistedPayload, response: res,},
+            })
+            return payment
         }
 
         await payment.update({
             status: "SUBMITTED",
-            mpesaTimestamp: timestamp,
             checkoutRequestId: res.CheckoutRequestID,
             merchantRequestId: res.MerchantRequestID,
             resultCode: res.ResponseCode,
             resultDescription: res.ResponseDescription,
-            requestPayload: {request: data, response: res},
-        }, {transaction})
-        await transaction.commit()
-        return res
+            requestPayload: {request: persistedPayload, response: res},
+        })
+        return payment
     } catch (e) {
-        await transaction.rollback()
-        console.log(e)
+        await payment.update({
+            status: "FAILED", resultDescription: e.message, requestPayload: {request: persistedPayload},
+        })
         throw e
     }
 }
