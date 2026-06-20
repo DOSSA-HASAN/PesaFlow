@@ -4,10 +4,9 @@ import {darajaRequest} from "../../shared/darajaRequest.js";
 import {AppError} from "../../../utils/AppError.js";
 import {generateTimestamp} from "../../../utils/generateTimestamp.js";
 import {Payment} from "../../../payment/payment.model.js";
+import {addStatusHistory} from "../../../utils/addStatusHistory.js";
 
-const FINAL_STATES = new Set([
-    "SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"
-])
+const FINAL_STATES = new Set(["SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"])
 
 const mapStatus = (code) => {
     switch (String(code)) {
@@ -48,12 +47,16 @@ export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) =>
         }
 
         await payment.update({
-            "resultDescription": res.ResultDesc, "status": mapStatus(res.ResultCode)
+            "resultDescription": res.ResultDesc,
+            "status": mapStatus(res.ResultCode),
+            statusHistory: addStatusHistory(payment, mapStatus(res.ResultCode))
         })
 
         return payment
 
     } catch (e) {
-        throw new AppError(e.message || "STK query failed", 500)
+        if (e instanceof AppError) throw e
+
+        throw new AppError(e.message || "STK query failed", 500 || e.statusCode)
     }
 }
