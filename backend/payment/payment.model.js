@@ -26,6 +26,10 @@ export const Payment = sequelize.define("Payment", {
         type: DataTypes.ENUM("PENDING", "SUBMITTED", "SUCCESS", "FAILED", "CANCELLED", "TIMEOUT"),
         defaultValue: "PENDING"
     },
+    statusHistory: {
+        type: DataTypes.ARRAY(DataTypes.JSON),
+        required: true,
+    },
     amount: {
         type: DataTypes.DECIMAL(12, 2),
         allowNull: false
@@ -63,7 +67,7 @@ export const Payment = sequelize.define("Payment", {
      */
     conversationId: {
         type: DataTypes.STRING,
-        unique: true,
+        unique: false,
         allowNull: true
     },
     /**
@@ -94,6 +98,10 @@ export const Payment = sequelize.define("Payment", {
         type: DataTypes.STRING,
         allowNull: true,
         unique: true
+    },
+    responseCode: {
+        type: DataTypes.STRING,
+        allowNull: true
     },
     resultCode: {
         type: DataTypes.STRING,
@@ -143,6 +151,7 @@ export const Payment = sequelize.define("Payment", {
         {fields: ["externalReceiptNumber"]},
         {fields: ["idempotencyKey"]},
         {fields: ["originatorConversationId"]},
+        {fields: ["checkoutRequestId", "status"]}
     ],
     tableName: "payments"
 })
