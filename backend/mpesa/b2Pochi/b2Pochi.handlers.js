@@ -10,6 +10,11 @@ export const b2PochiHandlers = {
         message: "Payment request received and awaiting confirmation",
     }),
 
+    SUBMITTED: (transaction) => ({
+        status: transaction.status,
+        message: "Payment request submitted and is being processed",
+    }),
+
     SUCCESS: (transaction) => ({
         status: transaction.status,
         message: "Payment received successfully",
