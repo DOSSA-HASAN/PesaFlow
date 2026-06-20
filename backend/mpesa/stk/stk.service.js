@@ -3,6 +3,8 @@ import {darajaRequest} from "../shared/darajaRequest.js";
 import {stkHandlers} from "./stk.handlers.js";
 import {generateMpesaPassword} from "../../utils/generateMpesaPassword.js";
 import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
+import {addStatusHistory} from "../../utils/addStatusHistory.js";
+import {generateTimestamp} from "../../utils/generateTimestamp.js";
 
 
 /**
@@ -24,7 +26,7 @@ import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentS
  * @property {Object} Body.stkCallback - STK callback details.
  * @property {string} Body.stkCallback.MerchantRequestID - Original merchant request ID.
  * @property {string} Body.stkCallback.CheckoutRequestID - Original checkout request ID.
- * @property {number} Body.stkCallback.ResultCode - Transaction result code. 0 indicates success.
+ * @property {number} Body.stkCallback.responseCode - Transaction result code. 0 indicates success.
  * @property {string} Body.stkCallback.ResultDesc - Description of the transaction result.
  * @property {Object} [Body.stkCallback.CallbackMetadata] - Additional transaction metadata returned on success.
  */
@@ -57,10 +59,7 @@ import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentS
  */
 export const initiateStkPush = async (shortCode, amount, transactionType, customerPhone, accountRef = "CustPay", description = "CustSTK", idempotencyKey, userId) => {
     let payment;
-    const timestamp = new Date()
-        .toISOString()
-        .replace(/[-T:.Z]/g, "")
-        .slice(0, 14);
+    const timestamp = generateTimestamp()
 
     const url = "/mpesa/stkpush/v1/processrequest"
     const method = "POST"
@@ -96,6 +95,10 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             initiatedBy: userId,
             requestPayload: {request: persistedPayload},
             mpesaTimestamp: timestamp,
+            statusHistory: [{
+                status: "PENDING",
+                timestamp: new Date().toISOString()
+            }]
         })
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
@@ -115,12 +118,13 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
         const success = res?.ResponseCode === "0"
 
 
-        if (!success) {
+        if (!res || !success) {
             await payment.update({
                 status: "FAILED",
-                resultCode: res.ResponseCode,
-                resultDescription: res.ResponseDescription,
-                requestPayload: {request: persistedPayload, response: res,},
+                responseCode: res?.ResponseCode,
+                resultDescription: res?.ResponseDescription,
+                requestPayload: {request: persistedPayload, response: res || null,},
+                statusHistory: addStatusHistory(payment, "FAILED")
             })
             return payment
         }
@@ -129,14 +133,17 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             status: "SUBMITTED",
             checkoutRequestId: res.CheckoutRequestID,
             merchantRequestId: res.MerchantRequestID,
-            resultCode: res.ResponseCode,
+            responseCode: res.ResponseCode,
             resultDescription: res.ResponseDescription,
             requestPayload: {request: persistedPayload, response: res},
+            statusHistory: addStatusHistory(payment, "SUBMITTED")
         })
         return payment
     } catch (e) {
         await payment.update({
-            status: "FAILED", resultDescription: e.message, requestPayload: {request: persistedPayload},
+            status: "FAILED",
+            resultDescription: e.message, requestPayload: {request: persistedPayload},
+            statusHistory: addStatusHistory(payment, "FAILED")
         })
         throw e
     }
