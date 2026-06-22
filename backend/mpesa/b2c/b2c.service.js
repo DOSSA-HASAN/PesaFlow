@@ -5,9 +5,9 @@ import {b2cHandlers} from "./b2c.handlers.js";
 import {AppError} from "../../utils/AppError.js";
 import {randomUUID} from "crypto"
 import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
-
-const BASE_URL = process.env.MPESA_BASE_URL
-const IS_SANDBOX = process.env.MPESA_ENV === "sandbox"
+import {generateTimestamp} from "../../utils/generateTimestamp.js";
+import {addStatusHistory} from "../../utils/addStatusHistory.js";
+import {generateOriginatorConversationID} from "../../utils/generateOriginatorConversationID.js";
 
 export const initiateB2CPayment = async ({
                                              reference = `B2C-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -30,7 +30,7 @@ export const initiateB2CPayment = async ({
         throw new AppError(`Invalid Command ID: ${commandId}`)
     }
 
-    const OriginatorConversationID = randomUUID()
+    const OriginatorConversationID = generateOriginatorConversationID()
 
     const data = {
         "OriginatorConversationID": OriginatorConversationID,
@@ -62,7 +62,11 @@ export const initiateB2CPayment = async ({
             remarks: remarks,
             originatorConversationId: OriginatorConversationID,
             requestPayload: persistedPayload,
-            initiatedBy: initiatedBy
+            initiatedBy: initiatedBy,
+            statusHistory: [{
+                status: "PENDING", timestamp: new Date().toISOString()
+            }],
+            mpesaTimestamp: generateTimestamp()
         })
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
@@ -77,23 +81,45 @@ export const initiateB2CPayment = async ({
         throw e
     }
 
-    const res = await darajaRequest({method, url, data})
-    const success = String(res.ResponseCode) === "0"
-    if (!success) {
-        await payment.update({
-            status: "FAILED",
-            resultCode: res.ResponseCode,
-            resultDescription: res.ResponseDescription,
-            requestPayload: {request: persistedPayload, response: res},
-        })
-        return res
-    }
+    try {
+        const res = await darajaRequest({method, url, data})
+        const success = String(res.ResponseCode) === "0"
+        if (!success) {
+            await payment.update({
+                status: "FAILED",
+                conversationId: res?.ConversationID,
+                originatorConversationId: res?.OriginatorConversationID,
+                responseCode: res?.ResponseCode,
+                resultDescription: res?.ResponseDescription,
+                requestPayload: {request: persistedPayload, response: res || null},
+                statusHistory: addStatusHistory(payment, "FAILED")
 
-    await payment.update({
-        status: "SUBMITTED",
-        conversationId: res.ConversationID,
-        resultCode: res.ResponseCode,
-        resultDescription: res.ResponseDescription,
-    })
-    return res
+            })
+            return payment
+        }
+
+        await payment.update({
+            status: "SUBMITTED",
+            conversationId: res?.ConversationID,
+            originatorConversationId: res?.OriginatorConversationID,
+            responseCode: res?.ResponseCode,
+            resultDescription: res?.ResponseDescription,
+            requestPayload: {request: persistedPayload, response: res},
+            statusHistory: addStatusHistory(payment, "SUBMITTED")
+        })
+        return payment
+    } catch (e) {
+        try {
+            await payment?.update({
+                status: "FAILED",
+                resultDescription: e.message,
+                requestPayload: {request: persistedPayload, response: null},
+                statusHistory: addStatusHistory(payment, "FAILED")
+            })
+        } catch (updateError) {
+            // log the update error
+            throw new AppError(`An error occurred while requesting payment approval: ${updateError.response?.data}`, updateError.statusCode || 500)
+        }
+        throw new AppError(`An error occurred while requesting payment approval: ${e.message}`, 500)
+    }
 }
