@@ -98,6 +98,6 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
             // log the update error
             throw new AppError(`An error occurred while requesting payment approval: ${updateError.response?.data}`, updateError.statusCode || 500)
         }
-        throw new AppError(`An error occurred while requesting payment approval`, 500)
+        throw new AppError(`An error occurred while requesting payment approval: ${e.message}`, 500)
     }
 }
