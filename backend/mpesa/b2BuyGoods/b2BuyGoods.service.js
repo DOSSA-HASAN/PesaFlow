@@ -1,12 +1,13 @@
 import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
 import {getIdentifierType} from "../../utils/getIdentifierType.js";
 import {Payment} from "../../payment/payment.model.js";
-import {b2PaybillHandlers} from "../b2paybill/b2paybill.handlers.js";
-import {stkHandlers} from "../stk/stk.handlers.js";
 import {darajaRequest} from "../shared/darajaRequest.js";
 import {b2BuyGoodsHandlers} from "./b2BuyGoods.handlers.js";
+import {generateTimestamp} from "../../utils/generateTimestamp.js";
+import {addStatusHistory} from "../../utils/addStatusHistory.js";
+import {AppError} from "../../utils/AppError.js";
 
-export const b2BuyGoods = async (amount, shortCode, recieverShortCode, accountReference, remarks = "OK", idempotencyKey, userId) => {
+export const b2BuyGoods = async ({amount, shortCode, recieverShortCode, accountReference, remarks = "OK", idempotencyKey, userId}) => {
     let payment
     const method = "POST"
     const url = "/mpesa/b2b/v1/paymentrequest"
@@ -40,7 +41,11 @@ export const b2BuyGoods = async (amount, shortCode, recieverShortCode, accountRe
             remarks: remarks,
             partyA: shortCode,
             partyB: recieverShortCode,
-            initiatedBy: userId
+            initiatedBy: userId,
+            statusHistory: [{
+                status: "PENDING", timestamp: new Date().toISOString()
+            }],
+            mpesaTimestamp: generateTimestamp()
         })
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
@@ -56,27 +61,45 @@ export const b2BuyGoods = async (amount, shortCode, recieverShortCode, accountRe
         throw e
     }
 
-    const res = await darajaRequest({method, url, data})
-    if (res.ResponseCode !== "0") {
-        await payment.update({
-            status: "FAILED",
+    try {
+
+        const res = await darajaRequest({method, url, data})
+        if (res.ResponseCode !== "0") {
+            await payment.update({
+                status: "FAILED",
+                conversationId: res.ConversationID,
+                originatorConversationId: res.OriginatorConversationID,
+                responseCode: res.ResponseCode,
+                resultDescription: res.ResponseDescription,
+                requestPayload: {request: persistedPayload, response: res},
+                statusHistory: addStatusHistory(payment, "FAILED")
+            })
+            return payment
+        }
+
+        payment = await payment.update({
+            status: "SUBMITTED",
             conversationId: res.ConversationID,
             originatorConversationId: res.OriginatorConversationID,
-            resultCode: res.ResponseCode,
+            responseCode: res.ResponseCode,
             resultDescription: res.ResponseDescription,
             requestPayload: {request: persistedPayload, response: res},
+            statusHistory: addStatusHistory(payment, "SUBMITTED")
         })
+
         return payment
+    } catch (e) {
+        try {
+            await payment?.update({
+                status: "FAILED",
+                resultDescription: e.message,
+                requestPayload: {request: persistedPayload, response: null},
+                statusHistory: addStatusHistory(payment, "FAILED")
+            })
+        } catch (updateError) {
+            // log the update error
+            throw new AppError(`An error occurred while requesting payment approval: ${updateError.response?.data}`, updateError.statusCode || 500)
+        }
+        throw new AppError(`An error occurred while requesting payment approval: ${e.message}`, 500)
     }
-
-    payment = await payment.update({
-        status: "SUBMITTED",
-        conversationId: res.ConversationID,
-        originatorConversationId: res.OriginatorConversationID,
-        resultCode: res.ResponseCode,
-        resultDescription: res.ResponseDescription,
-        requestPayload: {request: persistedPayload, response: res},
-    })
-
-    return payment
 }
