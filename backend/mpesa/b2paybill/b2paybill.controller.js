@@ -7,11 +7,15 @@ export const b2paybill = async (req, res, next) => {
         const {id} = req.user
         const {amount, receiverShortCode, accountRef, idempotencyKey,} = req.body
 
-        if (!shortCode || !amount || amount === "0" || Number(amount) < 0 || !receiverShortCode || receiverShortCode === "" || !idempotencyKey || !accountRef) {
+        if(!amount || amount === "0" || Number(amount) < 0){
+            return errorResponse("Amount must be greater than 0", 400)
+        }
+
+        if (!shortCode || !receiverShortCode || receiverShortCode === "" || !idempotencyKey || !accountRef) {
             return errorResponse(res, "Missing required fields to initiate payment", 400)
         }
 
-        const paymentResult = await b2Paybill.b2paybill(amount, shortCode, receiverShortCode, accountRef, idempotencyKey, id)
+        const paymentResult = await b2Paybill.b2paybill({amount, shortCode, receiverShortCode, accountRef, idempotencyKey, userId: id})
         return successResponse(res, paymentResult, "Payment request submitted successfully", 200)
     } catch (e) {
         next(e)
