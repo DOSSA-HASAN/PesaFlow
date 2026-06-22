@@ -1,71 +1,49 @@
 /**
- * @typedef {Object} PurchaseHandlerResponse
+ * @typedef {Object} b2BuyGoodsHandlers
  * @property {string} status
  * @property {string} message
- * @property {Object} [order]
+ * @property {Object} [transaction]
  */
-
 export const b2BuyGoodsHandlers = {
-    PENDING: (order) => {
+    PENDING: (tx) => {
         return {
-            status: order.status,
-            message: "Order created and awaiting processing"
-        }
+            status: tx.status,
+            message: "Transaction is being processed"
+        };
     },
 
-    CONFIRMED: (order) => {
+    SUBMITTED: (tx) => {
         return {
-            status: order.status,
-            message: "Order confirmed. Preparing items for dispatch"
-        }
+            status: tx.status,
+            message: "Payment request submitted to M-Pesa"
+        };
     },
 
-    PROCESSING: (order) => {
+    SUCCESS: (tx) => {
         return {
-            status: order.status,
-            message: "Order is being processed and packed"
-        }
+            status: tx.status,
+            message: "Funds sent successfully to Till"
+        };
     },
 
-    SHIPPED: (order) => {
+    FAILED: (tx) => {
         return {
-            status: order.status,
-            message: "Order has been shipped and is on the way"
-        }
+            status: tx.status,
+            message: "Transaction failed"
+        };
     },
 
-    DELIVERED: (order) => {
+    CANCELLED: (tx) => {
         return {
-            status: order.status,
-            message: "Order delivered successfully"
-        }
+            status: tx.status,
+            message: "Transaction was cancelled"
+        };
     },
 
-    FAILED: (order) => {
+    TIMEOUT: (tx) => {
         return {
-            status: order.status,
-            message: "Order processing failed"
-        }
-    },
-
-    CANCELLED: (order) => {
-        return {
-            status: order.status,
-            message: "Order was cancelled"
-        }
-    },
-
-    RETURNED: (order) => {
-        return {
-            status: order.status,
-            message: "Order was returned by customer"
-        }
-    },
-
-    TIMEOUT: (order) => {
-        return {
-            status: order.status,
-            message: "Order expired due to no confirmation or payment"
-        }
+            status: tx.status,
+            message: "Transaction timed out. No response received from M-Pesa"
+        };
     },
 };
