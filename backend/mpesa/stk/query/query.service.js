@@ -43,7 +43,6 @@ export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) =>
     try {
         const res = await darajaRequest({method, url, data})
         if (!res || res.ResponseCode !== "0" && Number(res.ResponseCode) !== 0) {
-            console.log(typeof res.ResponseCode)
             throw new AppError(res?.ResponseDescription ? res?.ResponseDescription : '`Failed to get STK transaction status', 400)
         }
 
