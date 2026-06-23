@@ -145,12 +145,10 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             await payment?.update({
                 status: "FAILED",
                 resultDescription: e.message,
-                requestPayload: {request: persistedPayload, response: null},
                 statusHistory: addStatusHistory(payment, "FAILED")
             })
         } catch (updateError) {
             // log the update error
-            console.log("INNER CATCH BLOCK RUNNING FOR UPDATE")
             throw new AppError(`An error occurred while updating payment: ${updateError.response?.data || updateError.message}`, updateError.statusCode || 500)
         }
         throw new AppError(`An error occurred while requesting STK approval: ${e.message}`, 500)
