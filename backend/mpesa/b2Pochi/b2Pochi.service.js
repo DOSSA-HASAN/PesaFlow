@@ -89,11 +89,16 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
         return payment
 
     } catch (e) {
-        await payment.update({
-            status: "FAILED",
-            resultDescription: e.message, requestPayload: {request: persistedPayload},
-            statusHistory: addStatusHistory(payment, "FAILED")
-        })
-        throw new AppError(`An error occurred while requesting payment approval`, 500)
+        try {
+            await payment?.update({
+                status: "FAILED",
+                resultDescription: e.message,
+                statusHistory: addStatusHistory(payment, "FAILED")
+            })
+        } catch (updateError) {
+            // log the update error
+            throw new AppError(`An error occurred while requesting payment approval: ${updateError.response?.data}`, updateError.statusCode || 500)
+        }
+        throw new AppError(`An error occurred while requesting payment approval: ${e.message}`, 500)
     }
 }
