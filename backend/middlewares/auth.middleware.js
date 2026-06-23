@@ -28,6 +28,6 @@ export const verifyUser = async (req, res, next) => {
         req.user = userInstance
         next()
     } catch (e) {
-        return errorResponse(res, "Invalid or expired token", 401, e)
+        return errorResponse(res, "Invalid or expired token. Login again.", 401, e)
     }
 }
