@@ -5,6 +5,7 @@ import {generateMpesaPassword} from "../../utils/generateMpesaPassword.js";
 import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
 import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {generateTimestamp} from "../../utils/generateTimestamp.js";
+import {AppError} from "../../utils/AppError.js";
 
 
 /**
@@ -140,11 +141,18 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
         })
         return payment
     } catch (e) {
-        await payment.update({
-            status: "FAILED",
-            resultDescription: e.message, requestPayload: {request: persistedPayload},
-            statusHistory: addStatusHistory(payment, "FAILED")
-        })
-        throw e
+        try {
+            await payment?.update({
+                status: "FAILED",
+                resultDescription: e.message,
+                requestPayload: {request: persistedPayload, response: null},
+                statusHistory: addStatusHistory(payment, "FAILED")
+            })
+        } catch (updateError) {
+            // log the update error
+            console.log("INNER CATCH BLOCK RUNNING FOR UPDATE")
+            throw new AppError(`An error occurred while updating payment: ${updateError.response?.data || updateError.message}`, updateError.statusCode || 500)
+        }
+        throw new AppError(`An error occurred while requesting STK approval: ${e.message}`, 500)
     }
 }
