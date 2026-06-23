@@ -22,27 +22,28 @@ const mapStatus = (code) => {
 }
 
 export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) => {
+
+    const payment = await Payment.findOne({where: {"checkoutRequestId": checkoutRequestId}})
+    if (!payment) {
+        throw new AppError(`STK transaction with checkout request Id : ${checkoutRequestId} not found`, 404)
+    }
+
+    if (FINAL_STATES.has(payment.status)) {
+        return payment
+    }
+
+    const method = "POST"
+    const url = "/mpesa/stkpushquery/v1/query"
+    const data = {
+        "BusinessShortCode": shortCode,
+        "Password": generateMpesaPassword(shortCode),
+        "Timestamp": generateTimestamp(),
+        "CheckoutRequestID": checkoutRequestId,
+    }
     try {
-
-        const payment = await Payment.findOne({where: {"checkoutRequestId": checkoutRequestId}})
-        if (!payment) {
-            throw new AppError(`STK transaction with checkout request Id : ${checkoutRequestId} not found`, 404)
-        }
-
-        if (FINAL_STATES.has(payment.status)) {
-            return payment
-        }
-
-        const method = "POST"
-        const url = "/mpesa/stkpushquery/v1/query"
-        const data = {
-            "BusinessShortCode": shortCode,
-            "Password": generateMpesaPassword(shortCode),
-            "Timestamp": generateTimestamp(),
-            "CheckoutRequestID": checkoutRequestId,
-        }
         const res = await darajaRequest({method, url, data})
-        if (!res || res.ResponseCode !== "0") {
+        if (!res || res.ResponseCode !== "0" && Number(res.ResponseCode) !== 0) {
+            console.log(typeof res.ResponseCode)
             throw new AppError(res?.ResponseDescription ? res?.ResponseDescription : '`Failed to get STK transaction status', 400)
         }
 
@@ -53,10 +54,7 @@ export const queryStkTransactionStatus = async (shortCode, checkoutRequestId) =>
         })
 
         return payment
-
     } catch (e) {
-        if (e instanceof AppError) throw e
-
-        throw new AppError(e.message || "STK query failed", 500 || e.statusCode)
+        throw new AppError(`An error occurred while querying STK status: ${e.message}`, 500)
     }
 }
