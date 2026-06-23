@@ -113,7 +113,6 @@ export const initiateB2CPayment = async ({
             await payment?.update({
                 status: "FAILED",
                 resultDescription: e.message,
-                requestPayload: {request: persistedPayload, response: null},
                 statusHistory: addStatusHistory(payment, "FAILED")
             })
         } catch (updateError) {
