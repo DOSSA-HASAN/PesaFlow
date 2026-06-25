@@ -6,6 +6,7 @@ import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentS
 import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {generateTimestamp} from "../../utils/generateTimestamp.js";
 import {AppError} from "../../utils/AppError.js";
+import "dotenv/config.js"
 
 
 /**
@@ -73,7 +74,7 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
         "PartyA": customerPhone,
         "PartyB": Number(shortCode),
         "PhoneNumber": customerPhone,
-        "CallBackURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", "https://custom.domain.com"),
+        "CallBackURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/stk/callback`, `${process.env.CALLBACK_URL}/api/mpesa/callback/stk/callback`),
         "AccountReference": accountRef,
         "TransactionDesc": description,
     }
