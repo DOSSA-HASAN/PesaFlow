@@ -15,7 +15,7 @@ import {b2Pochi} from "./b2Pochi/b2Pochi.controller.js";
 const router = express.Router()
 
 // Middleware for all routes to verify users existence in database and ensure valid jwt credentials
-router.use(verifyUser)
+// router.use(verifyUser)
 
 // Route to get access token from safaricom that will be used in subsequent requests
 router.post("/token", getAccessToken)
@@ -37,7 +37,7 @@ router.post("/confirmation", paymentAccountResolver, (req, res, next) => {
 })
 
 // Route to prompt customers (needs callback)
-router.post("/stk/initiate", paymentAccountResolver, initiateStkPush)
+router.post("/stk/initiate", verifyUser,  paymentAccountResolver, initiateStkPush)
 
 // Route to carry out a business-to-customer payment (needs callback)
 router.post("/b2c/initiate", paymentAccountResolver, initiateB2CPayment)
