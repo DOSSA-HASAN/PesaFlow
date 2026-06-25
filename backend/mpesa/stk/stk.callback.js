@@ -6,22 +6,52 @@
  */
 import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {AppError} from "../../utils/AppError.js";
+import {Payment} from "../../payment/payment.model.js";
+import {Op} from "sequelize";
 
 const FINAL_STATES = [
     "SUCCESS",
     "CANCELLED",
-    "FAILED",
+    "TIMEOUT",
+    "FAILED"
 ]
 
-export const stkCallbackHandler = async (payment, callback) => {
-    if (!payment) {
-        throw new AppError("Missing payment details", 400)
+const mapStkStatus = (resultCode) => {
+    switch (Number(resultCode)) {
+        case 0:
+            return "SUCCESS";
+
+        case 1032:
+            return "CANCELLED";
+
+        case 1:
+        case 2001:
+            return "FAILED";
+
+        default:
+            return "FAILED";
     }
+};
 
-
+export const stkCallbackHandler = async (callback) => {
+    console.log("RUNNING CALLBACK STK")
     if (!callback) {
         throw new AppError("Missing callback details", 400)
     }
+    // find payment here
+    const payment = await Payment.findOne({
+        where: {
+            status: {
+                [Op.notIn]: ["CANCELLED", "TIMEOUT", "FAILED"],
+            },
+            checkoutRequestId: callback.CheckoutRequestID
+        }
+    })
+
+    if(!payment){
+        throw new AppError("Payment history not found", 400)
+    }
+
 
     if (FINAL_STATES.includes(payment.status)) {
         return payment
@@ -59,16 +89,15 @@ export const stkCallbackHandler = async (payment, callback) => {
         } else {
             // callback with errors
             await payment.update({
-                status: "FAILED", callbackPayload: callback, statusHistory: addStatusHistory(payment, "FAILED")
+                status: mapStkStatus(callback?.ResultCode),
+                callbackPayload: callback,
+                statusHistory: addStatusHistory(payment, mapStkStatus(callback?.ResultCode))
             })
         }
 
+        return payment
+
     } catch (e) {
-        // Logs
-        console.error(e)
-        console.error(e.message)
-        console.error(e.response)
-        console.error(e.response?.data)
         throw new AppError(`An error occurred in STK callback handler: ${e.message}`, 500)
     }
 }
