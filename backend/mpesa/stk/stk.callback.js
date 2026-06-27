@@ -8,13 +8,9 @@ import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {AppError} from "../../utils/AppError.js";
 import {Payment} from "../../payment/payment.model.js";
 import {Op} from "sequelize";
+import {emitToUser} from "../../utils/sockets.js";
 
-const FINAL_STATES = [
-    "SUCCESS",
-    "CANCELLED",
-    "TIMEOUT",
-    "FAILED"
-]
+const FINAL_STATES = ["SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"]
 
 const mapStkStatus = (resultCode) => {
     switch (Number(resultCode)) {
@@ -43,12 +39,11 @@ export const stkCallbackHandler = async (callback) => {
         where: {
             status: {
                 [Op.notIn]: ["CANCELLED", "TIMEOUT", "FAILED"],
-            },
-            checkoutRequestId: callback.CheckoutRequestID
+            }, checkoutRequestId: callback.CheckoutRequestID
         }
     })
 
-    if(!payment){
+    if (!payment) {
         throw new AppError("Payment history not found", 400)
     }
 
@@ -65,11 +60,9 @@ export const stkCallbackHandler = async (callback) => {
 
             const rawItems = callback?.CallbackMetadata?.Item
             const itemsArray = Array.isArray(rawItems) ? rawItems : rawItems ? [rawItems] : []
-            const items = Object.fromEntries(
-                itemsArray
-                    .filter(i => i?.Name)
-                    .map(i => [i.Name, i.Value])
-            )
+            const items = Object.fromEntries(itemsArray
+                .filter(i => i?.Name)
+                .map(i => [i.Name, i.Value]))
 
             const getItem = (name) => items[name]
 
@@ -95,6 +88,7 @@ export const stkCallbackHandler = async (callback) => {
             })
         }
 
+        emitToUser(payment.initiatedBy, "stk:callback", payment)
         return payment
 
     } catch (e) {
