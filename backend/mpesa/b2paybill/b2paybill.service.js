@@ -14,9 +14,9 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
     const url = "/mpesa/b2b/v1/paymentrequest"
     const data = {
         "Initiator": process.env.INITIATOR_NAME, // TODO: GENERATE SECURITY CREDENTIALS FOR PROD
-        "SecurityCredential": getMpesaEnvironmentSpecificValue("dFt2o0bR7G3hYa9v+Z8ZoFowg3l6th+VU1aucFHPLZbex38yoA+XZcIM0iLfTivxgkuEqZQnyYlYdEW0uS8eQuPEAAhr6KiczPJCnzOsfrQbv7ddjm8RwseuAr7PY9N8hp6saBZxEji+ybLAU1i5FrP7EhFCj4imVh8RnaJjYmdNAfWBE5T8OdFZFiQM78JFXLVzinUpyvXriPHH5eC8A50tvYQ5zM0U3aZ+0J/sPBKgo9K6Nha+eHfRp+iOaou9QVbMagnY5JUbDdwZr7yzI3tGsA1jt42Kmv8Ehuf6JtGrEOAyTXp6ZwCrDxgv/x38zvOzKFuECKIiDSpA6xcLbQ==", "GENERATE SECURITY CREDENTIALS FOR PROD"),
+        "SecurityCredential": getMpesaEnvironmentSpecificValue("XW2w7EhtE/+iJG9J9/WKZWUIAUIUl+UHWhN4R3CKzn/DCgJmdOvYjvEaIzMhnlHIiOX4SHhTUOwQjzie9qmqq8M28dGXqNg1jbsEELF1e4mNghKFi736wlZTI4m6drAzveNG5gBNTbDytadUv7ecgZ6w8RYB2++gXZ1JlPfNpo5YN0VW3/dqyBb18vLZOScsCN46YaHQ3H5xapljpaxBAOweRmImUqBO8ZoZTRy2MG50/miPcpcuu1T4qj7YQdFfIoqF6tAbdtSlcWagvje9nFBfOJruJU+xMyc09sS4A6uUHASlzpR3PZ1El8NAHsPO544ybUEoxQhZUQPhGi8xwA==", "GENERATE SECURITY CREDENTIALS FOR PROD"),
         "CommandID": "BusinessPayBill",
-        "SenderIdentifierType": getIdentifierType(),
+        "SenderIdentifierType": getIdentifierType("PB"),
         "RecieverIdentifierType": "4", // REMAINS 4 THROUGHOUT SINCE RECEIVER IS ALWAYS A PAYBILL NUMBER
         "Amount": amount,
         "PartyA": shortCode,
@@ -24,7 +24,7 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
         "AccountReference": accountRef,
         "Remarks": "OK",
         "QueueTimeOutURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/businesstobusiness/queue/", process.env.TIMEOUT_URL,),
-        "ResultURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/businesstobusiness/result/", process.env.CALLBACK_URL,)
+        "ResultURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`, `${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`),
     }
     const persistedPayload = {
         ...data, "SecurityCredential": "[REDACTED]"
