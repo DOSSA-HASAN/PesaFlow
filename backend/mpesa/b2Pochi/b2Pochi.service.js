@@ -6,8 +6,10 @@ import {b2PochiHandlers} from "./b2Pochi.handlers.js";
 import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {generateTimestamp} from "../../utils/generateTimestamp.js";
 import {generateOriginatorConversationID} from "../../utils/generateOriginatorConversationID.js";
+import "dotenv/config.js"
 
 export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked", reference, idempotencyKey, userId) => {
+    console.log(process.env.INITIATOR_NAME)
     let payment
     const method = "POST"
     const url = "/mpesa/b2pochi/v1/paymentrequest"
@@ -15,14 +17,14 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
         "OriginatorConversationID": generateOriginatorConversationID(),
         "InitiatorName": process.env.INITIATOR_NAME,
         // TODO: generate security credentials for prod
-        "SecurityCredential": getMpesaEnvironmentSpecificValue("RC6E9WDxXR4b9X2c6z3gp0oC5Th ==", "GENERATE MPESA SECURITY CREDENTIALS FOR PROD"),
+        "SecurityCredential": getMpesaEnvironmentSpecificValue("bjnpSVb9VQf94gPtJgl71loDJ4ez66QmIigq6+1cwAKQtvwMQ7ygOAPutuSMDpTD0xui6NeyQxlAHyFkfdPeGzzj6H6D2DnNDt0M62dP5R/fseWUHr4vIB4Ys0fjoFoM7hWcEDcR3f9QDHdeykx+kbWPLnsiyrsPsOFsUOzkG+3C9VPJOL0VYdugPqxaDEvn9qX9jZRkSBSTMT9lPWoqpnrDPTYz6unWnkpVTFGtFkJJlVl0gk3FvebWF4mm2BhyoIsQW2+5U1JC9Fw2pIKuO5SKQNnG3AuQnIIgxpLiqjAqgzXTd7qnd7XP1QBNRnx7UikRtduolg7M/A2AibCG/A==", "GENERATE MPESA SECURITY CREDENTIALS FOR PROD"),
         "CommandID": "BusinessPayToPochi",
         "Amount": amount,
         "PartyA": shortCode,
         "PartyB": reciever,
         "Remarks": remarks,
         "QueueTimeOutURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", process.env.TIMEOUT_URL),
-        "ResultURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/path", process.env.CALLBACK_URL),
+        "ResultURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`, `${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`),
     }
 
     const persistedPayload = {
@@ -63,7 +65,10 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
 
     try {
         const res = await darajaRequest({method, url, data})
+        console.log(`ORIGINATOR CONVERSATION ID: ${res?.OriginatorConversationID}`)
         if (!res || res.ResponseCode !== "0") {
+            console.log(`RES FROM DARAJA: ${res}`)
+            console.log(`RES FROM DARAJA: ${res.ResponseCode}`)
             await payment.update({
                 status: "FAILED",
                 conversationId: res?.ConversationID,
