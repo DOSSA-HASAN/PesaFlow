@@ -74,7 +74,7 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
         "PartyA": customerPhone,
         "PartyB": Number(shortCode),
         "PhoneNumber": customerPhone,
-        "CallBackURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/stk/callback`, `${process.env.CALLBACK_URL}/api/mpesa/callback/stk/callback`),
+        "CallBackURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`, `${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`),
         "AccountReference": accountRef,
         "TransactionDesc": description,
     }
