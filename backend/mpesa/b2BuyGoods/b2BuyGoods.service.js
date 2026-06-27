@@ -6,6 +6,7 @@ import {b2BuyGoodsHandlers} from "./b2BuyGoods.handlers.js";
 import {generateTimestamp} from "../../utils/generateTimestamp.js";
 import {addStatusHistory} from "../../utils/addStatusHistory.js";
 import {AppError} from "../../utils/AppError.js";
+import "dotenv/config.js"
 
 export const b2BuyGoods = async ({amount, shortCode, recieverShortCode, accountReference, remarks = "OK", idempotencyKey, userId}) => {
     let payment
@@ -14,9 +15,9 @@ export const b2BuyGoods = async ({amount, shortCode, recieverShortCode, accountR
     const data = {
         "Initiator": process.env.INITIATOR_NAME,
         // TODO: Generate security credentials for prod
-        "SecurityCredential": getMpesaEnvironmentSpecificValue("m9MXAVUlNzWlVi/qnwVP+6d7tIFtq6WtT8z5E4p7J2etVNKKbESlzIs7fL8qGsDu3VeMyKIJZJVFCfH2z1oTQSrdkVcgZ3bsPT7GcvMutlo2oIUi/US+CE9vMFm2OULFLz8HTg5BmHt31nhYi29lH9BFZrLVcdTFXMZZ0tPfeIgPkydXeZn1N0dGHwbFDD3RrDfW+B+Q+587JMOU3a7IdDIjZF0BWiEBQTAQa6677kUSTQ2vtptabUxnWERTJ0JXgmJa58M00OSKBAosciW4RpxGcTHKUzsysLyHzkXZJeq6dfKd267ie3qNhFQS+6k584t7ZUXXJXNpNWLmHsY0+Q==", "GENERATE SECURITY CERDENTIALS FOR PROD"),
+        "SecurityCredential": getMpesaEnvironmentSpecificValue("P6BDx137ITsd7DUKQKCi7m2B0U2Wau2guNn2CGzUK0uW0DZeELgyT/pTQ3gAF6dsnokTqv3LsMuewFjHd2S7Xxv7ZW9c4bd1PJ7h+2sL5qjuiozv+1+jLQmDopZemrT51NGb8hp3cGHAxAXEpglACWXlYydqa85K3xL8LfUvRWdW9GiXO3x7zbKfM0Dyk348GTGq4jlskyCu/NVeAmbj4k4LBKaUeJGh3yC8jAVkjrPdxVkIJI4sBW2OX00b6PrMi8kDQqJK2QXJ/IQSSb22Q7Pcr7aWWci33sBuZhi/VZ1ruTIAg2LGFiFUGbSf3Lw/ESnY5/k7rgmhap/FcOflLw==", "GENERATE SECURITY CERDENTIALS FOR PROD"),
         "CommandID": "BusinessBuyGoods",
-        "SenderIdentifierType": getIdentifierType(),
+        "SenderIdentifierType": getIdentifierType("PB"),
         "RecieverIdentifierType": "4", // Stays constant
         "Amount": amount,
         "PartyA": shortCode,
@@ -24,7 +25,7 @@ export const b2BuyGoods = async ({amount, shortCode, recieverShortCode, accountR
         "AccountReference": accountReference,
         "Remarks": remarks,
         "QueueTimeOutURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/businesstobusiness/queue/", process.env.CALLBACK_URL),
-        "ResultURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/businesstobusiness/result/", process.env.TIMEOUT_URL),
+        "ResultURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`, `${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`),
     }
 
     const persistedPayload = {
