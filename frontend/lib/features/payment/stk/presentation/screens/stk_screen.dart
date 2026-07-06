@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:frontend/core/widgets/btn.dart";
 import "package:frontend/core/widgets/text_field.dart";
+import "package:frontend/features/payment/stk/provider/stk_provider.dart";
 
 class StkScreen extends ConsumerStatefulWidget {
   const StkScreen({super.key});
@@ -11,9 +12,13 @@ class StkScreen extends ConsumerStatefulWidget {
 }
 
 class _StkScreenState extends ConsumerState<StkScreen> {
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _phoneNumberController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final stkState = ref.watch(stkProvider);
     return Container(
       constraints: BoxConstraints(maxWidth: 1000),
       clipBehavior: Clip.hardEdge,
@@ -80,17 +85,33 @@ class _StkScreenState extends ConsumerState<StkScreen> {
                     label: "M-Pesa Phone Number",
                     hintText: "712345678",
                     prefixIcon: Icon(Icons.numbers_rounded),
+                    controller: _phoneNumberController,
                   ),
                   const SizedBox(height: 20),
                   CustomTextField(
                     label: "Payment Amount (KES)",
                     hintText: "12,450",
                     prefixIcon: Icon(Icons.money),
+                    controller: _amountController,
                   ),
                   const SizedBox(height: 20),
                   CustomButton(
-                    label: "Send Prompt",
-                    onPressed: () {},
+                    label: stkState is AsyncLoading
+                        ? "Prompting..."
+                        : "Send Prompt",
+                    onPressed: stkState is AsyncLoading
+                        ? () {}
+                        : () {
+                            ref
+                                .read(stkProvider.notifier)
+                                .stkPrompt(
+                                  "174379",
+                                  _amountController.text.trim(),
+                                  _phoneNumberController.text.trim(),
+                                );
+                            _amountController.text = "";
+                            _phoneNumberController.text = "";
+                          },
                     width: 650,
                     height: 50,
                   ),
