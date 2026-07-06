@@ -132,12 +132,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             label: "Business Email or Username",
                             hintText: "e.g. cashier@business.com",
                             prefixIcon: Icon(Icons.person_outline_rounded),
+                            controller: _emailController,
                           ),
                           const SizedBox(height: 15),
                           CustomTextField(
                             label: "Password",
                             hintText: "******",
                             prefixIcon: Icon(Icons.lock_open_rounded),
+                            controller: _passwordController,
                           ),
                           const SizedBox(height: 15),
                           CustomButton(
@@ -153,6 +155,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           _emailController.text.trim(),
                                           _passwordController.text,
                                         );
+                                    print("Email controller: ${_emailController.text}");
+                                    print("Password controller: ${_passwordController.text}");
                                   },
                             width: 440,
                             height: 50,
