@@ -2,7 +2,10 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:frontend/core/widgets/btn.dart";
 import "package:frontend/core/widgets/text_field.dart";
+import "package:frontend/core/widgets/toast_util.dart";
+import "package:frontend/features/payment/stk/presentation/widgets/qr_code.dart";
 import "package:frontend/features/payment/stk/provider/stk_provider.dart";
+import "package:toastification/toastification.dart";
 
 class StkScreen extends ConsumerStatefulWidget {
   const StkScreen({super.key});
@@ -19,6 +22,18 @@ class _StkScreenState extends ConsumerState<StkScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final stkState = ref.watch(stkProvider);
+
+    ref.listen<AsyncValue<bool>>(stkProvider, (previous, next) {
+      if (next is AsyncData<bool> && next.value == true) {
+        ToastUtil.showGeneralToast(
+          context: context,
+          type: ToastificationType.success,
+          title: "Stk Prompt Successful",
+          description: "Customer has been prompted.",
+        );
+      }
+    });
+
     return Container(
       constraints: BoxConstraints(maxWidth: 1000),
       clipBehavior: Clip.hardEdge,
@@ -109,13 +124,11 @@ class _StkScreenState extends ConsumerState<StkScreen> {
                                   _amountController.text.trim(),
                                   _phoneNumberController.text.trim(),
                                 );
-                            _amountController.text = "";
-                            _phoneNumberController.text = "";
                           },
                     width: 650,
                     height: 50,
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 30),
                   Flexible(
                     child: Container(
                       padding: const EdgeInsets.all(12),
@@ -145,53 +158,7 @@ class _StkScreenState extends ConsumerState<StkScreen> {
               ),
             ),
           ),
-          Expanded(
-            child: Container(
-              height: double.maxFinite,
-              padding: const EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.onSecondary.withOpacity(0.03),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: theme.colorScheme.onSecondary.withOpacity(0.1),
-                      ),
-                      color: theme.colorScheme.onPrimaryContainer,
-                    ),
-                    child: Center(child: Text("QR Code Comes here")),
-                  ),
-                  const SizedBox(height: 30),
-                  Text(
-                    "Scan To Pay",
-                    style: TextStyle(
-                      color: theme.colorScheme.onSecondary.withOpacity(0.8),
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: 300,
-                    child: Text(
-                      "Scan To Use the M-Pesa app to scan this QR code if the push notification doesn't appear.",
-                      style: TextStyle(
-                        color: theme.colorScheme.onSecondary.withOpacity(0.5),
-                        fontSize: 15,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Expanded(child: QrCode()),
         ],
       ),
     );
