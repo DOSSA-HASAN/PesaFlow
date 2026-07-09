@@ -16,11 +16,11 @@ class B2BuyGoodsRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      shortCode: shortCode,
-      amount: amount,
-      recieverShortCode: recieverShortCode,
-      accountReference: accountReference,
-      idempotencyKey: idempotencyKey,
+      "shortCode": shortCode,
+      "amount": amount,
+      "recieverShortCode": recieverShortCode,
+      "accountReference": accountReference,
+      "idempotencyKey": idempotencyKey,
     };
   }
 }
