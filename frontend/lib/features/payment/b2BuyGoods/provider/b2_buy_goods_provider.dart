@@ -2,10 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:frontend/core/network/dio_client.dart';
-import 'package:frontend/core/widgets/toast_util.dart';
 import 'package:frontend/features/payment/b2BuyGoods/data/models/b2_buy_goods_request.dart';
 import 'package:frontend/features/payment/b2BuyGoods/data/repository/b2_buy_goods_repository.dart';
-import 'package:toastification/toastification.dart';
 
 final dioProvider = Provider<Dio>((ref) {
   return DioClient().instance;
