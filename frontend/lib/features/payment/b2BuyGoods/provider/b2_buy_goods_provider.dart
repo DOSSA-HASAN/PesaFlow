@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:frontend/core/error/network_error_util.dart';
 import 'package:frontend/core/network/dio_client.dart';
 import 'package:frontend/features/payment/b2BuyGoods/data/models/b2_buy_goods_request.dart';
 import 'package:frontend/features/payment/b2BuyGoods/data/repository/b2_buy_goods_repository.dart';
@@ -48,7 +49,8 @@ class B2BuyGoodsNotifier extends StateNotifier<AsyncValue<bool>> {
         throw Exception("Could not initiate b2-buygoods payment!");
       }
     } catch (e, stackTrace) {
-      state = AsyncError(e, stackTrace);
+      final String errorMessage = NetworkErrorUtil.getErrorMessage(e);
+      state = AsyncValue.error(errorMessage, stackTrace);
     }
   }
 }
