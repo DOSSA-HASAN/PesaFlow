@@ -26,21 +26,21 @@ class StkNotifier extends StateNotifier<AsyncValue<bool>> {
 
   StkNotifier(this._repository, this._ref) : super(const AsyncData(false));
 
-  Future<void> stkPrompt(
-    String shortCode,
-    String amount,
-    String phoneNumber,
-  ) async {
+  Future<void> stkPrompt(String shortCode,
+      String amount,
+      String phoneNumber,
+      String? reference,
+      String? description,) async {
     state = AsyncLoading();
     try {
       final request = StkRequest(
-        shortCode: shortCode,
-        amount: amount,
-        phoneNumber: phoneNumber,
+          shortCode: shortCode,
+          amount: amount,
+          phoneNumber: phoneNumber,
+          accountRef: reference,
+          description: description
       );
-      print("Shortcode: ${shortCode}");
-      print("Amount: ${amount}");
-      print("PhoneNumber: ${phoneNumber}");
+      print("STK Request: ${request.toJson()}");
       final response = await _repository.stkPrompt(request);
 
       if (response.statusCode == 200) {
@@ -49,8 +49,15 @@ class StkNotifier extends StateNotifier<AsyncValue<bool>> {
         throw Exception("An Error Occurred. Could not prompt!");
       }
     } catch (e, stackTrace) {
-      state = AsyncError(e, stackTrace);
-      _ref.read(errorProvider.notifier).showError(e.toString());
+      if (e is DioException) {
+        final message = e.response?.data["message"] ?? e.message;
+
+        state = AsyncError(message, stackTrace);
+        _ref.read(errorProvider.notifier).showError(message);
+      } else {
+        state = AsyncError(e, stackTrace);
+        _ref.read(errorProvider.notifier).showError(e.toString());
+      }
     }
   }
 }

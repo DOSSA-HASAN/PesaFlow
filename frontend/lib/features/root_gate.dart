@@ -5,7 +5,13 @@ import 'package:frontend/features/dashabord/presentation/widgets/app_sidebar.dar
 import 'package:frontend/features/dashabord/providers/navigation_provider.dart';
 import 'package:frontend/features/login/presentation/screens/login_screen.dart';
 import 'package:frontend/features/login/provider/user_provider.dart';
+import 'package:frontend/features/payment/b2BuyGoods/presentation/screens/b2_buy_goods_screen.dart';
+import 'package:frontend/features/payment/b2C/presentation/screens/b2c_screen.dart';
+import 'package:frontend/features/payment/b2Paybill/presentation/screens/b2_paybill_screen.dart';
+import 'package:frontend/features/payment/b2Pochi/presentation/screens/b2_pochi_screen.dart';
 import 'package:frontend/features/payment/stk/presentation/screens/stk_screen.dart';
+import 'package:frontend/features/user_management/presentation/screens/add_user_screen.dart';
+import 'package:frontend/features/user_management/presentation/screens/user_management_screen.dart';
 
 class RootGate extends ConsumerStatefulWidget {
   const RootGate({super.key});
@@ -30,8 +36,6 @@ class _RootGateState extends ConsumerState<RootGate> {
     final currentUser = ref.watch(userProvider);
     final currentIndex = ref.watch(currentNavIndex);
 
-    // 🚀 THE REACTIVE FIX: Listen for changes to the user state down the pipeline.
-    // This fires instantly on hot restarts, cold boots, login, and logout!
     ref.listen(userProvider, (previous, next) {
       if (next != null) {
         print(
@@ -44,22 +48,28 @@ class _RootGateState extends ConsumerState<RootGate> {
       }
     });
 
-    if (currentUser == null) {
-      return const LoginScreen();
-    }
+    // if (currentUser == null) {
+    //   return const LoginScreen();
+    // }
 
     // 1. Define your view routing matrix in the exact order of allowed sidebar items
     Widget getActiveScreen(int index) {
       // Create a list of views that matches your allowed items list setup
       switch (index) {
-        case 1:
-          return const Center(child: Text("Dashboard Main Screen View"));
         case 0:
-          return const StkScreen(); // 👈 Loads your STK payment view
+          return const StkScreen();
+        case 1:
+          return const B2BuyGoodsScreen();
         case 2:
-          return const Center(child: Text("Auditing Logs View"));
+          return const B2PaybillScreen();
         case 3:
-          return const Center(child: Text("Settings Workspace View"));
+          return const B2PochiScreen();
+        case 4:
+          return const B2CustomerScreen();
+        case 5:
+          return const UserManagementScreen();
+        case 6:
+          return const AddUserScreen();
         default:
           return const Center(child: Text("Dashboard Main Screen View"));
       }

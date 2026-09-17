@@ -4,6 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:frontend/core/widgets/toast_util.dart';
 import 'package:frontend/features/payment/b2BuyGoods/data/models/b2_buy_goods_callback_request.dart';
 import 'package:frontend/features/payment/b2BuyGoods/provider/b2_buy_goods_callback_provider.dart';
+import 'package:frontend/features/payment/b2Paybill/data/models/b2_paybill_callback_request.dart';
+import 'package:frontend/features/payment/b2Paybill/provider/b2_paybill_callback_provider.dart';
 import "package:socket_io_client/socket_io_client.dart" as IO;
 import 'package:toastification/toastification.dart';
 
@@ -88,6 +90,31 @@ class SocketService {
           ToastUtil.showPaymentToast(context, data);
         }
       });
+
+      _socket?.on("payment:callback:b2paybill", (data) {
+        if (context.mounted) {
+          print("Running sockets for b2paybill callback");
+          print(data);
+          try {
+            final callbackData = B2PaybillCallbackRequest.fromJson(data);
+
+            ProviderScope.containerOf(context)
+                .read(b2PaybillCallbackProvider.notifier)
+                .updateCallbackData(callbackData);
+          } catch (e, stackTrace) {
+            print("Running socket error catch block");
+            ToastUtil.showGeneralToast(
+              context: context,
+              type: ToastificationType.error,
+              title: "Business To BuyGoods Callback Error",
+              description: e.toString(),
+            );
+          }
+          ToastUtil.showPaymentToast(context, data);
+        }
+      });
+
+
     } catch (e) {
       print("🚨 Exception caught setting up socket client: $e");
     }

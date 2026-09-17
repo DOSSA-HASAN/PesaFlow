@@ -5,10 +5,12 @@ import "package:flutter/rendering.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:frontend/core/widgets/btn.dart";
 import "package:frontend/core/widgets/text_field.dart";
+import "package:frontend/core/widgets/toast_util.dart";
 import "package:frontend/features/login/presentation/widgets/login_error_view.dart";
 import "package:frontend/features/login/presentation/widgets/security_footer.dart";
 import "package:frontend/features/login/presentation/widgets/welcome_sidebar.dart";
 import "package:frontend/features/login/provider/login_provider.dart";
+import "package:toastification/toastification.dart";
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -38,7 +40,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen(loginProvider, (previous, next) {
       if (next is AsyncData<bool> && next == true) {
-        print("✅ Ref.listen is working...");
+        ToastUtil.showGeneralToast(
+          context: context,
+          type: ToastificationType.success,
+          title: "Login Success",
+          description: "Welcome back",
+        );
+      } else if (next is AsyncError) {
+        ToastUtil.showGeneralToast(
+          context: context,
+          type: ToastificationType.error,
+          title: "Login Failed",
+          description: next.error.toString(),
+        );
       }
     });
 
@@ -155,8 +169,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           _emailController.text.trim(),
                                           _passwordController.text,
                                         );
-                                    print("Email controller: ${_emailController.text}");
-                                    print("Password controller: ${_passwordController.text}");
+                                    print(
+                                      "Email controller: ${_emailController.text}",
+                                    );
+                                    print(
+                                      "Password controller: ${_passwordController.text}",
+                                    );
                                   },
                             width: 440,
                             height: 50,

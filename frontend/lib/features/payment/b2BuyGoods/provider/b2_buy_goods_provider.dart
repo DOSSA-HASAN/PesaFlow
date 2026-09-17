@@ -33,6 +33,7 @@ class B2BuyGoodsNotifier extends StateNotifier<AsyncValue<bool>> {
     String amount,
     String recieverShortCode,
     String accountReference,
+    String? remarks,
   ) async {
     state = AsyncLoading();
     try {
@@ -41,6 +42,7 @@ class B2BuyGoodsNotifier extends StateNotifier<AsyncValue<bool>> {
         amount: amount,
         recieverShortCode: recieverShortCode,
         accountReference: accountReference,
+        remarks: remarks
       );
       final success = await _repository.b2BuyGoods(request);
       if (success.statusCode == 200) {

@@ -33,8 +33,8 @@ class ToastUtil {
         _trigger(
           context: context,
           type: ToastificationType.error,
-          title: reference,
-          description: message,
+          title: "Payment failed",
+          description: "Payment for reference / invoice number : $reference failed.",
         );
     }
   }

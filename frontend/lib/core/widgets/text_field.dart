@@ -24,11 +24,13 @@ class CustomTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: theme.colorScheme.onSecondary.withOpacity(0.7)),
-        ),
-        const SizedBox(height: 8),
+        if(label.isNotEmpty) ... [
+          Text(
+            label,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: theme.colorScheme.onSecondary.withOpacity(0.7)),
+          ),
+          const SizedBox(height: 8),
+        ],
         TextField(
           controller: controller,
           keyboardType: keyboardType,
@@ -39,12 +41,12 @@ class CustomTextField extends StatelessWidget {
             filled: true,
             fillColor: theme.colorScheme.onSecondary.withOpacity(0.04),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(4),
             ),
             enabledBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                     color: theme.colorScheme.onSecondary.withOpacity(0.1)),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(4),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
