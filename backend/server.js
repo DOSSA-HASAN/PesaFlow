@@ -3,14 +3,14 @@ import dns from 'node:dns';
 dns.setDefaultResultOrder('ipv4first');
 import "dotenv/config.js"
 import app from "./app.js"
-import {seedApp} from "./seeds/seedApp.js"
-import {connectRabbitMQ} from "./events/connection.js";
-import {connectSQL} from "./config/db.js";
-import {connectRedis} from "./utils/redisClient.js";
+import { seedApp } from "./seeds/seedApp.js"
+import { connectRabbitMQ } from "./events/connection.js";
+import { connectSQL } from "./config/db.js";
+import { connectRedis } from "./utils/redisClient.js";
 
-import {getIdentifierType} from "./utils/getIdentifierType.js";
+import { getIdentifierType } from "./utils/getIdentifierType.js";
 import * as http from "node:http";
-import {initSocket} from "./utils/sockets.js";
+import { initSocket } from "./utils/sockets.js";
 
 const PORT = process.env.PORT
 
@@ -28,9 +28,9 @@ const startServer = async () => {
         await connectRedis()
         await connectSQL()
 
-        // if (process.env.NODE_ENV === "development") {
-        //     await seedApp()
-        // }
+        if (process.env.NODE_ENV === "development") {
+            await seedApp()
+        }
 
         const server = http.createServer(app)
         const socket = initSocket(server)
