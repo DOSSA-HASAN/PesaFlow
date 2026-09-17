@@ -10,7 +10,7 @@ export const generatePaymentQRCode = async (req, res, next) => {
             return errorResponse(res, `Missing ${process.env.MPESA_SHORTCODE_TYPE} number`, 400)
         }
         if (!amount) {
-            return errorResponse(res, "Missing amount. Required for QR code generation")
+            return errorResponse(res, "Missing amount. Required for QR code generation", 400)
         }
         const qrCode = await mpesaService.generatePaymentQRCode(shortCode, RefNo, amount, size)
         return successResponse(res, qrCode, "QR code generated successfully", 200)

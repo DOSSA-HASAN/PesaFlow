@@ -4,11 +4,11 @@
  * @param callback: the callback data from daraja
  * @returns {Promise<void>}
  */
-import {addStatusHistory} from "../../utils/addStatusHistory.js";
-import {AppError} from "../../utils/AppError.js";
-import {Payment} from "../../payment/payment.model.js";
-import {Op} from "sequelize";
-import {emitToUser} from "../../utils/sockets.js";
+import { addStatusHistory } from "../../utils/addStatusHistory.js";
+import { AppError } from "../../utils/AppError.js";
+import { Payment } from "../../payment/payment.model.js";
+import { Op } from "sequelize";
+import { emitToUser } from "../../utils/sockets.js";
 
 const FINAL_STATES = ["SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"]
 
@@ -30,7 +30,6 @@ const mapStkStatus = (resultCode) => {
 };
 
 export const stkCallbackHandler = async (callback) => {
-    console.log("RUNNING CALLBACK STK")
     if (!callback) {
         throw new AppError("Missing callback details", 400)
     }

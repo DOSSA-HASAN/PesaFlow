@@ -152,6 +152,6 @@ export const initiateStkPush = async (shortCode, amount, transactionType, custom
             // log the update error
             throw new AppError(`An error occurred while updating payment: ${updateError.response?.data || updateError.message}`, updateError.statusCode || 500)
         }
-        throw new AppError(`An error occurred while requesting STK approval: ${e.message}`, 500)
+        throw new AppError(`An error occurred while requesting STK approval: ${e.message} - ${e} ${e.stack}`, 500)
     }
 }

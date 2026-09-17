@@ -1,10 +1,10 @@
-import {Payment} from "../../payment/payment.model.js";
-import {Op} from "sequelize";
-import {errorResponse, successResponse} from "../../utils/response.js";
-import {stkCallbackHandler} from "../stk/stk.callback.js";
-import {b2PochiCallbackHandler} from "../b2Pochi/b2Pochi.callback.js";
-import {b2paybillCallbackHandler} from "../b2paybill/b2paybill.callback.js";
-import {b2BuyGoodsCallbackHandler} from "../b2BuyGoods/b2BuyGoods.callback.js";
+import { Payment } from "../../payment/payment.model.js";
+import { Op } from "sequelize";
+import { errorResponse, successResponse } from "../../utils/response.js";
+import { stkCallbackHandler } from "../stk/stk.callback.js";
+import { b2PochiCallbackHandler } from "../b2Pochi/b2Pochi.callback.js";
+import { b2paybillCallbackHandler } from "../b2paybill/b2paybill.callback.js";
+import { b2BuyGoodsCallbackHandler } from "../b2BuyGoods/b2BuyGoods.callback.js";
 
 const COMPLETED_FIELDS = [
     "SUCCESS",
@@ -14,6 +14,9 @@ const COMPLETED_FIELDS = [
 ]
 
 export const callbackHandler = async (req, res, next) => {
+    console.log("*****************************************************************************************")
+    console.log("RUNNING CALLBACK HANDLER FUN")
+    console.log("*****************************************************************************************")
     const callback = req.body
 
     if (!callback) {
@@ -30,8 +33,8 @@ export const callbackHandler = async (req, res, next) => {
         const payment = await Payment.findOne({
             where: {
                 [Op.or]: [
-                    {originatorConversationId: CALLBACK_BODY.OriginatorConversationID},
-                    {conversationId: CALLBACK_BODY.ConversationID}
+                    { originatorConversationId: CALLBACK_BODY.OriginatorConversationID },
+                    { conversationId: CALLBACK_BODY.ConversationID }
                 ]
             }
         })
@@ -39,7 +42,7 @@ export const callbackHandler = async (req, res, next) => {
             return errorResponse(res, "Payment history not found!", 400)
         }
 
-        if(COMPLETED_FIELDS.includes(payment.status)){
+        if (COMPLETED_FIELDS.includes(payment.status)) {
             console.log(`Payment is from db: ${payment.status}`)
             console.log(`Payment is from db: ${payment.statusHistory}`)
             return successResponse(res, payment, "Payment retrieved from database", 200)

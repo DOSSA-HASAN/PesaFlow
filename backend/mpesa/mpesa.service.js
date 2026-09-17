@@ -41,7 +41,7 @@ export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", a
             "MerchantName": MerchantName,
             "RefNo": RefNo,
             "Amount": amount,
-            "TrxCode": getTrxCode(),
+            "TrxCode": getTrxCode("BG"), // TODO: change in prod environemnt
             "CPI": shortCode,
             "size": size
         }
@@ -49,6 +49,7 @@ export const generatePaymentQRCode = async (shortCode, RefNo = "Invoice Test", a
         const qrCode = await darajaRequest({method, url, data})
         return qrCode
     } catch (e) {
+        console.log(`Mpesa QR code service: ${e.response.data}`)
         throw e
     }
 

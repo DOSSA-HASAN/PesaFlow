@@ -4,8 +4,9 @@
  * @param callback: the callback data from daraja
  * @returns {Promise<void>}
  */
-import {addStatusHistory} from "../../utils/addStatusHistory.js";
-import {AppError} from "../../utils/AppError.js";
+import { addStatusHistory } from "../../utils/addStatusHistory.js";
+import { AppError } from "../../utils/AppError.js";
+import { emitToUser } from "../../utils/sockets.js";
 
 const FINAL_STATES = ["SUCCESS", "CANCELLED", "TIMEOUT", "FAILED"]
 
@@ -33,6 +34,7 @@ const mapB2BuyGoodsStatus = (resultCode) => {
 };
 
 export const b2BuyGoodsCallbackHandler = async (payment, callback) => {
+    console.log("RUNNING CALLBACK FOR B2BUYGOODS")
     if (!callback) {
         throw new AppError("Missing callback details", 400)
     }
@@ -67,7 +69,7 @@ export const b2BuyGoodsCallbackHandler = async (payment, callback) => {
             })
         }
 
-        // emitToUser(payment.initiatedBy, "payment:callback", payment)
+        emitToUser(payment.initiatedBy, "payment:callback:b2buygoods", payment)
         return payment
 
     } catch (e) {

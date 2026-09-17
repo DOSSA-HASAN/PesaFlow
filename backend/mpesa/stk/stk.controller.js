@@ -3,7 +3,6 @@ import * as stkService from "./stk.service.js"
 
 export const initiateStkPush = async (req, res, next) => {
     try {
-        console.log(req.body)
         const {shortCode} = req.paymentAccount
         const {id} = req.user
         if(!shortCode){

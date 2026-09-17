@@ -1,14 +1,14 @@
 import "dotenv/config.js"
-import {getIdentifierType} from "../../utils/getIdentifierType.js";
-import {Payment} from "../../payment/payment.model.js";
-import {darajaRequest} from "../shared/darajaRequest.js";
-import {b2PaybillHandlers} from "./b2paybill.handlers.js";
-import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
-import {generateTimestamp} from "../../utils/generateTimestamp.js";
-import {addStatusHistory} from "../../utils/addStatusHistory.js";
-import {AppError} from "../../utils/AppError.js";
+import { getIdentifierType } from "../../utils/getIdentifierType.js";
+import { Payment } from "../../payment/payment.model.js";
+import { darajaRequest } from "../shared/darajaRequest.js";
+import { b2PaybillHandlers } from "./b2paybill.handlers.js";
+import { getMpesaEnvironmentSpecificValue } from "../../utils/getMpesaEnvironmentSpecificValue.js";
+import { generateTimestamp } from "../../utils/generateTimestamp.js";
+import { addStatusHistory } from "../../utils/addStatusHistory.js";
+import { AppError } from "../../utils/AppError.js";
 
-export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRef, idempotencyKey, userId}) => {
+export const b2paybill = async ({ amount, shortCode, receiverShortCode, accountRef, idempotencyKey, userId, remarks = "OK" }) => {
     let payment;
     const method = "POST"
     const url = "/mpesa/b2b/v1/paymentrequest"
@@ -22,13 +22,15 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
         "PartyA": shortCode,
         "PartyB": receiverShortCode,
         "AccountReference": accountRef,
-        "Remarks": "OK",
+        "Remarks": remarks,
         "QueueTimeOutURL": getMpesaEnvironmentSpecificValue("https://mydomain.com/businesstobusiness/queue/", process.env.TIMEOUT_URL,),
         "ResultURL": getMpesaEnvironmentSpecificValue(`${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`, `${process.env.CALLBACK_URL}/api/mpesa/callback/payment/callbacks`),
     }
     const persistedPayload = {
         ...data, "SecurityCredential": "[REDACTED]"
     }
+
+    console.log(`Data from b2paybill service: ${data}`)
 
     try {
         payment = await Payment.create({
@@ -39,16 +41,17 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
             partyB: receiverShortCode,
             initiatedBy: userId,
             reference: accountRef,
-            requestPayload: {request: persistedPayload},
+            requestPayload: { request: persistedPayload },
             statusHistory: [{
                 status: "PENDING", timestamp: new Date().toISOString()
             }],
-            mpesaTimestamp: generateTimestamp()
+            mpesaTimestamp: generateTimestamp(),
+            remarks
         })
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
             const existingPayment = await Payment.findOne({
-                where: {idempotencyKey: idempotencyKey}
+                where: { idempotencyKey: idempotencyKey }
             })
 
             if (existingPayment) {
@@ -60,7 +63,7 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
     }
 
     try {
-        const res = await darajaRequest({method, url, data})
+        const res = await darajaRequest({ method, url, data })
 
         if (res.ResponseCode !== "0") {
             await payment.update({
@@ -69,7 +72,7 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
                 originatorConversationId: res?.OriginatorConversationID,
                 responseCode: res?.ResponseCode,
                 resultDescription: res?.ResponseDescription,
-                requestPayload: {request: persistedPayload, response: res || null},
+                requestPayload: { request: persistedPayload, response: res || null },
                 statusHistory: addStatusHistory(payment, "FAILED")
             })
             return payment
@@ -81,13 +84,13 @@ export const b2paybill = async ({amount, shortCode, receiverShortCode, accountRe
             originatorConversationId: res?.OriginatorConversationID,
             responseCode: res?.ResponseCode,
             resultDescription: res?.ResponseDescription,
-            requestPayload: {request: persistedPayload, response: res},
+            requestPayload: { request: persistedPayload, response: res },
             statusHistory: addStatusHistory(payment, "SUBMITTED")
         })
 
         return updatedPayment
     } catch (e) {
-        try{
+        try {
             await payment?.update({
                 status: "FAILED",
                 resultDescription: e.message,

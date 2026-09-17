@@ -1,15 +1,17 @@
-import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
-import {Payment} from "../../payment/payment.model.js";
-import {darajaRequest} from "../shared/darajaRequest.js";
-import {AppError} from "../../utils/AppError.js";
-import {b2PochiHandlers} from "./b2Pochi.handlers.js";
-import {addStatusHistory} from "../../utils/addStatusHistory.js";
-import {generateTimestamp} from "../../utils/generateTimestamp.js";
-import {generateOriginatorConversationID} from "../../utils/generateOriginatorConversationID.js";
+import { getMpesaEnvironmentSpecificValue } from "../../utils/getMpesaEnvironmentSpecificValue.js";
+import { Payment } from "../../payment/payment.model.js";
+import { darajaRequest } from "../shared/darajaRequest.js";
+import { AppError } from "../../utils/AppError.js";
+import { b2PochiHandlers } from "./b2Pochi.handlers.js";
+import { addStatusHistory } from "../../utils/addStatusHistory.js";
+import { generateTimestamp } from "../../utils/generateTimestamp.js";
+import { generateOriginatorConversationID } from "../../utils/generateOriginatorConversationID.js";
 import "dotenv/config.js"
 
-export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked", reference, idempotencyKey, userId) => {
-    console.log(process.env.INITIATOR_NAME)
+export const b2Pochi = async ({ amount, shortCode, reciever, remarks = "remarked", reference, idempotencyKey, userId }) => {
+    console.log("*******************************************************************")
+    console.log("B2Pochi service running")
+    console.log("*******************************************************************")
     let payment
     const method = "POST"
     const url = "/mpesa/b2pochi/v1/paymentrequest"
@@ -42,7 +44,7 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
             partyA: shortCode,
             partyB: reciever,
             initiatedBy: userId,
-            requestPayload: {request: persistedPayload},
+            requestPayload: { request: persistedPayload },
             statusHistory: [{
                 status: "PENDING",
                 timestamp: new Date().toISOString()
@@ -52,7 +54,7 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
             const existingPayment = await Payment.findOne({
-                where: {idempotencyKey: idempotencyKey}
+                where: { idempotencyKey: idempotencyKey }
             })
 
             if (existingPayment) {
@@ -64,7 +66,7 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
     }
 
     try {
-        const res = await darajaRequest({method, url, data})
+        const res = await darajaRequest({ method, url, data })
         console.log(`ORIGINATOR CONVERSATION ID: ${res?.OriginatorConversationID}`)
         if (!res || res.ResponseCode !== "0") {
             console.log(`RES FROM DARAJA: ${res}`)
@@ -75,7 +77,7 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
                 originatorConversationId: res?.OriginatorConversationID,
                 responseCode: res?.ResponseCode,
                 resultDescription: res?.ResponseDescription,
-                requestPayload: {request: persistedPayload, response: res || null,},
+                requestPayload: { request: persistedPayload, response: res || null, },
                 statusHistory: addStatusHistory(payment, "FAILED")
             })
             return payment
@@ -87,7 +89,7 @@ export const b2Pochi = async (amount, shortCode, reciever, remarks = "remarked",
             originatorConversationId: res?.OriginatorConversationID,
             responseCode: res?.ResponseCode,
             resultDescription: res?.ResponseDescription,
-            requestPayload: {request: persistedPayload, response: res || null},
+            requestPayload: { request: persistedPayload, response: res || null },
             statusHistory: addStatusHistory(payment, "SUBMITTED")
         })
 

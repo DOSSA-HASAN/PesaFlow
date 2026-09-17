@@ -21,13 +21,13 @@ const router = express.Router()
 router.post("/token", getAccessToken)
 
 // Route to generate a payment QR Code
-router.post("/qr/generate", paymentAccountResolver, mpesaController.generatePaymentQRCode)
+router.post("/qr/generate", verifyUser, paymentAccountResolver, mpesaController.generatePaymentQRCode)
 
 // Route to register validation and confirmation URLs
 router.post("/c2b/register-urls", paymentAccountResolver, mpesaController.registerValidationAndConfirmationUrl)
 
 // Route to validate incoming payments
-router.post("/validation", paymentAccountResolver, (req, res, next)=>{
+router.post("/validation", paymentAccountResolver, (req, res, next) => {
     console.log("Validation url")
 })
 
@@ -37,19 +37,19 @@ router.post("/confirmation", paymentAccountResolver, (req, res, next) => {
 })
 
 // Route to prompt customers (needs callback)
-router.post("/stk/initiate", verifyUser,  paymentAccountResolver, initiateStkPush)
+router.post("/stk/initiate", verifyUser, paymentAccountResolver, initiateStkPush)
 
 // Route to carry out a business-to-customer payment (needs callback)
-router.post("/b2c/initiate", paymentAccountResolver, initiateB2CPayment)
+router.post("/b2c/initiate", verifyUser, paymentAccountResolver, initiateB2CPayment)
 
 // Route to carry out business-to-paybill payment (needs callback)
-router.post("/b2paybill/initiate", paymentAccountResolver, b2paybill)
+router.post("/b2paybill/initiate", verifyUser, paymentAccountResolver, b2paybill)
 
 // Route to carry out business-to-buy goods payment (needs callback)
-router.post("/b2buygoods/initiate", paymentAccountResolver, b2BuyGoods)
+router.post("/b2buygoods/initiate", verifyUser, paymentAccountResolver, b2BuyGoods)
 
 // Route to carry out business-to-pochi payment (needs callback)
-router.post("/b2pochi/initiate", paymentAccountResolver, b2Pochi)
+router.post("/b2pochi/initiate", verifyUser, paymentAccountResolver, b2Pochi)
 
 // Route to get mpesa wallet balance (needs callback)
 router.post("/balance", paymentAccountResolver, getMpesaBalance)

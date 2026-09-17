@@ -1,26 +1,25 @@
-import {sequelize} from "../../config/db.js";
-import {darajaRequest} from "../shared/darajaRequest.js";
-import {Payment} from "../../models/index.js"
-import {b2cHandlers} from "./b2c.handlers.js";
-import {AppError} from "../../utils/AppError.js";
-import {randomUUID} from "crypto"
-import {getMpesaEnvironmentSpecificValue} from "../../utils/getMpesaEnvironmentSpecificValue.js";
-import {generateTimestamp} from "../../utils/generateTimestamp.js";
-import {addStatusHistory} from "../../utils/addStatusHistory.js";
-import {generateOriginatorConversationID} from "../../utils/generateOriginatorConversationID.js";
+import { sequelize } from "../../config/db.js";
+import { darajaRequest } from "../shared/darajaRequest.js";
+import { Payment } from "../../models/index.js"
+import { b2cHandlers } from "./b2c.handlers.js";
+import { AppError } from "../../utils/AppError.js";
+import { getMpesaEnvironmentSpecificValue } from "../../utils/getMpesaEnvironmentSpecificValue.js";
+import { generateTimestamp } from "../../utils/generateTimestamp.js";
+import { addStatusHistory } from "../../utils/addStatusHistory.js";
+import { generateOriginatorConversationID } from "../../utils/generateOriginatorConversationID.js";
 
 export const initiateB2CPayment = async ({
-                                             reference = `B2C-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                                             idempotencyKey,
-                                             commandId,
-                                             amount,
-                                             shortCode,
-                                             receiver,
-                                             remarks = "remarked",
-                                             confirmationUrl,
-                                             timeoutUrl,
-                                             initiatedBy
-                                         }) => {
+    reference = `B2C-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    idempotencyKey,
+    commandId,
+    amount,
+    shortCode,
+    receiver,
+    remarks = "remarked",
+    confirmationUrl,
+    timeoutUrl,
+    initiatedBy
+}) => {
     let payment;
     const method = "POST"
     const url = "/mpesa/b2c/v3/paymentrequest"
@@ -71,7 +70,7 @@ export const initiateB2CPayment = async ({
     } catch (e) {
         if (e.name === "SequelizeUniqueConstraintError") {
             const existingPayment = await Payment.findOne({
-                where: {idempotencyKey: idempotencyKey}
+                where: { idempotencyKey: idempotencyKey }
             })
             if (existingPayment) {
                 const handler = b2cHandlers?.[existingPayment.status] ?? b2cHandlers.FAILED
@@ -82,7 +81,7 @@ export const initiateB2CPayment = async ({
     }
 
     try {
-        const res = await darajaRequest({method, url, data})
+        const res = await darajaRequest({ method, url, data })
         const success = String(res.ResponseCode) === "0"
         if (!success) {
             await payment.update({
@@ -91,7 +90,7 @@ export const initiateB2CPayment = async ({
                 originatorConversationId: res?.OriginatorConversationID,
                 responseCode: res?.ResponseCode,
                 resultDescription: res?.ResponseDescription,
-                requestPayload: {request: persistedPayload, response: res || null},
+                requestPayload: { request: persistedPayload, response: res || null },
                 statusHistory: addStatusHistory(payment, "FAILED")
 
             })
@@ -104,7 +103,7 @@ export const initiateB2CPayment = async ({
             originatorConversationId: res?.OriginatorConversationID,
             responseCode: res?.ResponseCode,
             resultDescription: res?.ResponseDescription,
-            requestPayload: {request: persistedPayload, response: res},
+            requestPayload: { request: persistedPayload, response: res },
             statusHistory: addStatusHistory(payment, "SUBMITTED")
         })
         return payment
